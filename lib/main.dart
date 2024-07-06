@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vest1/SplashScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,10 +14,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+          primarySwatch: Colors.indigo,
+          scaffoldBackgroundColor: Color.fromRGBO(19, 27, 71, 1.0),
+
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: Splashscreen()
     );
   }
 }
