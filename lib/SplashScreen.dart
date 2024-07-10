@@ -16,7 +16,7 @@ class Splashscreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 48,
                 fontWeight: FontWeight.w200,
-                color: Color.fromRGBO(16, 33, 15, 1.0)
+                color: Colors.white
               ),
 
             )
