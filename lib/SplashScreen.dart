@@ -19,10 +19,21 @@ class Splashscreen extends StatelessWidget {
                 color: Colors.white
               ),
 
-            )
+            ),
+            Container(
+                height: 100,
+                width: 200,
+                child: Card(
+                  child: Center(child: Text("Something"))
+                ))
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton.large(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        child: Icon(Icons.navigate_next),),
     );
   }
 }
