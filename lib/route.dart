@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:vest1/homePage.dart';
+import 'package:vest1/musicPage.dart';
+import 'package:vest1/navigationPage.dart';
+import 'package:vest1/userPage.dart';
 
 class RoutePage extends StatefulWidget {
   const RoutePage({super.key});
@@ -10,10 +14,10 @@ class RoutePage extends StatefulWidget {
 class _RoutePageState extends State<RoutePage> {
   int selectedPageIndex = 0;
   final List<Widget> pages = [
-    Text("Home"),
-    Text("Navigation"),
-    Text("Music"),
-    Text("Me")
+    HomePage(),
+    NavigationPage(),
+    MusicPage(),
+    UserPage()
   ];
   @override
   Widget build(BuildContext context) {
