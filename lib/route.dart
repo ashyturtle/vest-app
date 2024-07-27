@@ -19,6 +19,7 @@ class _RoutePageState extends State<RoutePage> {
     MusicPage(),
     UserPage()
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,10 +27,10 @@ class _RoutePageState extends State<RoutePage> {
         title: const Text("Vest"),
         elevation: 2,
       ),
-      body: Center(child: pages[selectedPageIndex],),
+      body: pages[selectedPageIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedPageIndex,
-        onDestinationSelected: (int index){
+        onDestinationSelected: (int index) {
           setState(() {
             selectedPageIndex = index;
           });

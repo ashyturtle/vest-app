@@ -16,7 +16,14 @@ class _MusicPageState extends State<MusicPage> {
   String? _artworkUrl;
 
   final _playlist = ConcatenatingAudioSource(children: [
-    AudioSource.file('assets/sample3s.mp3')
+    AudioSource.asset(
+      'assets/sample3s.mp3',
+      tag: MediaItem(
+        id: '1',
+        album: 'Album Name',
+        title: 'Sample Song',
+      ),
+    ),
   ]);
 
   @override
@@ -34,7 +41,7 @@ class _MusicPageState extends State<MusicPage> {
       if (index != null) {
         final tag = _audioPlayer.sequence![index].tag as MediaItem;
         setState(() {
-          _artworkUrl = tag.artUri.toString();
+          _artworkUrl = tag.artUri?.toString();
         });
       }
     });
