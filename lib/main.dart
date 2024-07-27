@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vest1/SplashScreen.dart';
+import 'package:vest1/musicPlayerPage.dart';
 import 'package:vest1/route.dart';
 
 void main() {
@@ -37,7 +38,7 @@ class MyApp extends StatelessWidget {
         )
 
       ),
-      home: RoutePage()
+      home: MusicPlayerPage()
     );
   }
 }

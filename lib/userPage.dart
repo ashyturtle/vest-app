@@ -1,5 +1,6 @@
-import "package:flutter/material.dart";
-class UserPage  extends StatefulWidget {
+import 'package:flutter/material.dart';
+
+class UserPage extends StatefulWidget {
   const UserPage({super.key});
 
   @override
