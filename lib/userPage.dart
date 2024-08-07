@@ -19,44 +19,85 @@ class _UserPageState extends State<UserPage> {
             height: 150,
             child: Card(
               color: MyApp.accentColor,
-              child: Center(
-                child: Text(
-                  "My Account",
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+              child: Row(
+                children:[
+                  SizedBox(width:8),
+                  Icon(Icons.person, size:30),
+                  Text(
+                    "My Account",
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      fontSize:30,
+                    ),
                   ),
-                ),
-              ),
-              //Icon()
-            ),
-          ),
-          Container(
-            height: 150,
-            child: Card(
-              color: MyApp.accentColor,
-              child: Center(child: Text("My Account")),
-            ),
-          ),
-          Container(
-            height: 150,
-            child: Card(
-              color: MyApp.accentColor,
-              child: Center(
-                child: Text("Something"),
+                ]
               ),
             ),
           ),
           Container(
             height: 150,
             child: Card(
-              color: MyApp.accentColor,
-              child: Center(
-                child: Text("Settings"),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(width:8),
+                  Icon(Icons.fitness_center_rounded, size:30),
+                  Text("Fitness",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 30)
+                  ),
+                ],
               ),
+              color: MyApp.accentColor,
             ),
           ),
+          Container(
+            height: 150,
+            child: Card(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(width:8),
+                  Icon(Icons.lightbulb_outline, size:30),
+                  Text("Help",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 30)
+                  ),
+                ],
+              ),
+              color: MyApp.accentColor,
+            ),
+          ),
+          Container(
+            height: 150,
+            child: Card(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(width:8),
+                  Icon(Icons.settings, size:30),
+                  Text("Settings",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 30)
+                  ),
+                ],
+              ),
+              color: MyApp.accentColor,
+            ),
+          ),
+
+
         ]);
   }
 }
