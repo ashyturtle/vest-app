@@ -9,6 +9,7 @@ class UserPage extends StatefulWidget {
 }
 
 class _UserPageState extends State<UserPage> {
+  Color C = Colors.blue;
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -17,8 +18,15 @@ class _UserPageState extends State<UserPage> {
         children: [
           Container(
             height: 150,
+            child: InkWell(
+              onTap:(){
+                setState(() {
+                  C = Colors.black;
+                  print("this button clicked");
+                });
+              },
             child: Card(
-              color: MyApp.accentColor,
+              color: C,
               child: Row(
                 children:[
                   SizedBox(width:8),
@@ -36,6 +44,8 @@ class _UserPageState extends State<UserPage> {
               ),
             ),
           ),
+          ),
+
           Container(
             height: 150,
             child: Card(
