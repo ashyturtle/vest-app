@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vest1/helpPage.dart';
 import 'package:vest1/main.dart';
 
 class UserPage extends StatefulWidget {
@@ -21,12 +22,10 @@ class _UserPageState extends State<UserPage> {
             child: InkWell(
               onTap:(){
                 setState(() {
-                  C = Colors.black;
-                  print("this button clicked");
                 });
               },
             child: Card(
-              color: C,
+              color: MyApp.accentColor,
               child: Row(
                 children:[
                   SizedBox(width:8),
@@ -68,22 +67,27 @@ class _UserPageState extends State<UserPage> {
           ),
           Container(
             height: 150,
-            child: Card(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(width:8),
-                  Icon(Icons.lightbulb_outline, size:30),
-                  Text("Help",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.italic,
-                          fontSize: 30)
-                  ),
-                ],
+            child: InkWell(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => HelpPage()));
+              },
+              child: Card(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(width:8),
+                    Icon(Icons.lightbulb_outline, size:30),
+                    Text("Help",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.italic,
+                            fontSize: 30)
+                    ),
+                  ],
+                ),
+                color: MyApp.accentColor,
               ),
-              color: MyApp.accentColor,
             ),
           ),
           Container(
