@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vest1/helpPage.dart';
 import 'package:vest1/main.dart';
+import 'package:vest1/myAccount.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
@@ -10,7 +11,6 @@ class UserPage extends StatefulWidget {
 }
 
 class _UserPageState extends State<UserPage> {
-
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -20,31 +20,28 @@ class _UserPageState extends State<UserPage> {
           Container(
             height: 150,
             child: InkWell(
-              onTap:(){
-                setState(() {
-                });
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => MyAccount()));
               },
-            child: Card(
-              color: MyApp.accentColor,
-              child: Row(
-                children:[
-                  SizedBox(width:8),
-                  Icon(Icons.person, size:30),
+              child: Card(
+                color: MyApp.accentColor,
+                child: Row(children: [
+                  SizedBox(width: 8),
+                  Icon(Icons.person, size: 30),
                   Text(
                     "My Account",
                     style: TextStyle(
                       fontStyle: FontStyle.italic,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
-                      fontSize:30,
+                      fontSize: 30,
                     ),
                   ),
-                ]
+                ]),
               ),
             ),
           ),
-          ),
-
           Container(
             height: 150,
             child: Card(
@@ -52,14 +49,13 @@ class _UserPageState extends State<UserPage> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(width:8),
-                  Icon(Icons.fitness_center_rounded, size:30),
+                  SizedBox(width: 8),
+                  Icon(Icons.fitness_center_rounded, size: 30),
                   Text("Fitness",
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontStyle: FontStyle.italic,
-                          fontSize: 30)
-                  ),
+                          fontSize: 30)),
                 ],
               ),
               color: MyApp.accentColor,
@@ -68,22 +64,22 @@ class _UserPageState extends State<UserPage> {
           Container(
             height: 150,
             child: InkWell(
-              onTap: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => HelpPage()));
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HelpPage()));
               },
               child: Card(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(width:8),
-                    Icon(Icons.lightbulb_outline, size:30),
+                    SizedBox(width: 8),
+                    Icon(Icons.lightbulb_outline, size: 30),
                     Text("Help",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontStyle: FontStyle.italic,
-                            fontSize: 30)
-                    ),
+                            fontSize: 30)),
                   ],
                 ),
                 color: MyApp.accentColor,
@@ -93,30 +89,28 @@ class _UserPageState extends State<UserPage> {
           Container(
             height: 150,
             child: InkWell(
-              onTap:(){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => HelpPage()));
-              } ,
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HelpPage()));
+              },
               child: Card(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(width:8),
-                    Icon(Icons.settings, size:30),
+                    SizedBox(width: 8),
+                    Icon(Icons.settings, size: 30),
                     Text("Settings",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontStyle: FontStyle.italic,
-                            fontSize: 30)
-                    ),
+                            fontSize: 30)),
                   ],
                 ),
                 color: MyApp.accentColor,
               ),
             ),
           ),
-
-
         ]);
   }
 }
