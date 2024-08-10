@@ -17,8 +17,8 @@ class HelpPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             InkWell(
-              borderRadius: BorderRadius.all(Radius.circular(100)),
-              onTap: (){},
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => HelpPage()));},
               child: Container(
                 height: 100,
                 child: Row(
@@ -34,8 +34,71 @@ class HelpPage extends StatelessWidget {
             ),
             Container(
               height: 2,
-              color: MyApp.surfaceColor,              
-            )
+              color: MyApp.surfaceColor,
+            ),
+            InkWell(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => HelpPage()));},
+              child: Container(
+                height: 100,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children:[
+                    const Text("Feedbacks",
+                    style: TextStyle(fontSize:20),
+                    ),
+                    IconButton(onPressed: (){}, icon: Icon (Icons.chevron_right))
+                  ]
+                )
+
+              ),
+            ),
+            Container(
+              height: 2,
+              color: MyApp.surfaceColor,
+            ),
+            InkWell(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => HelpPage()));},
+              child: Container(
+                  height: 100,
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children:[
+                        const Text("Report issues",
+                          style: TextStyle(fontSize:20),
+                        ),
+                        IconButton(onPressed: (){}, icon: Icon (Icons.chevron_right))
+                      ]
+                  )
+
+              ),
+            ),
+            Container(
+              height: 2,
+              color: MyApp.surfaceColor,
+            ),
+            InkWell(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => HelpPage()));},
+              child: Container(
+                  height: 100,
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children:[
+                        const Text("Contact us",
+                          style: TextStyle(fontSize:20),
+                        ),
+                        IconButton(onPressed: (){}, icon: Icon (Icons.chevron_right))
+                      ]
+                  )
+
+              ),
+            ),
+
+
+
+
           ],
         ),
       ),

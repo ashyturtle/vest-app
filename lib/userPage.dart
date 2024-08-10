@@ -10,7 +10,7 @@ class UserPage extends StatefulWidget {
 }
 
 class _UserPageState extends State<UserPage> {
-  Color C = Colors.blue;
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -92,22 +92,27 @@ class _UserPageState extends State<UserPage> {
           ),
           Container(
             height: 150,
-            child: Card(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(width:8),
-                  Icon(Icons.settings, size:30),
-                  Text("Settings",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.italic,
-                          fontSize: 30)
-                  ),
-                ],
+            child: InkWell(
+              onTap:(){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => HelpPage()));
+              } ,
+              child: Card(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(width:8),
+                    Icon(Icons.settings, size:30),
+                    Text("Settings",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.italic,
+                            fontSize: 30)
+                    ),
+                  ],
+                ),
+                color: MyApp.accentColor,
               ),
-              color: MyApp.accentColor,
             ),
           ),
 
