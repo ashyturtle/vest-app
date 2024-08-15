@@ -25,7 +25,7 @@ class _UserPageState extends State<UserPage> {
                     MaterialPageRoute(builder: (context) => MyAccount()));
               },
               child: Card(
-                color: MyApp.accentColor,
+                color: MyApp.secondaryColor,
                 child: Row(children: [
                   SizedBox(width: 8),
                   Icon(Icons.person, size: 30),

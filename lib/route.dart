@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vest1/components/SlidingAppbar.dart';
 import 'package:vest1/homePage.dart';
 import 'package:vest1/musicPage.dart';
 import 'package:vest1/navigationPage.dart';
@@ -11,7 +12,7 @@ class RoutePage extends StatefulWidget {
   State<RoutePage> createState() => _RoutePageState();
 }
 
-class _RoutePageState extends State<RoutePage> {
+class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMixin {
   int selectedPageIndex = 0;
   final List<Widget> pages = [
     HomePage(),
@@ -19,13 +20,26 @@ class _RoutePageState extends State<RoutePage> {
     MusicPage(),
     UserPage()
   ];
+  bool isAppbarVisible = true;
+  late final AnimationController _controller;
+  @override
+  void initState(){
+    super.initState();
+    _controller = AnimationController(vsync: this,
+    duration: Duration(milliseconds: 400)
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Vest"),
-        elevation: 2,
+      appBar: SlidingAppbar(
+        controller: _controller,
+        visible: isAppbarVisible,
+        child: AppBar(
+          title: const Text("Vest"),
+          elevation: 2,
+        ),
       ),
       body: pages[selectedPageIndex],
       bottomNavigationBar: NavigationBar(
