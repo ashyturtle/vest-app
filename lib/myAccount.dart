@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vest1/accountInformation.dart';
 
 import 'main.dart';
 
@@ -64,7 +65,7 @@ class MyAccount extends StatelessWidget {
               InkWell(
                 onTap: () {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => MyAccount()));
+                      MaterialPageRoute(builder: (context) => AccountInformation()));
                 },
                 child: Container(
                     child: Row(
