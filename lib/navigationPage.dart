@@ -18,11 +18,14 @@ class _NavigationPageState extends State<NavigationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GoogleMap(
-      onMapCreated: _onMapCreated,
-      initialCameraPosition: CameraPosition(
-        target: _center,
-        zoom: 10.0, // Changed from 1.0 to 10.0 for better visibility
+    return Scaffold(
+      extendBodyBehindAppBar: true, // This ensures the body is behind the app bar if present
+      body: GoogleMap(
+        onMapCreated: _onMapCreated,
+        initialCameraPosition: CameraPosition(
+          target: _center,
+          zoom: 10.0, // Adjusted for better visibility
+        ),
       ),
     );
   }

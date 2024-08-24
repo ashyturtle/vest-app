@@ -20,27 +20,39 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
     MusicPage(),
     UserPage()
   ];
-  bool isAppbarVisible = true;
   late final AnimationController _controller;
+
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this,
-    duration: Duration(milliseconds: 400)
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 400),
     );
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Hide AppBar only for NavigationPage
+    bool isAppbarVisible = selectedPageIndex != 1;
+
     return Scaffold(
-      appBar: SlidingAppbar(
+      appBar: isAppbarVisible
+          ? SlidingAppbar(
         controller: _controller,
         visible: isAppbarVisible,
         child: AppBar(
           title: const Text("Vest"),
           elevation: 2,
         ),
-      ),
+      )
+          : null, // Set appBar to null for full screen on NavigationPage
       body: pages[selectedPageIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedPageIndex,
