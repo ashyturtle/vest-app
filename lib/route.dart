@@ -59,6 +59,11 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
         onDestinationSelected: (int index) {
           setState(() {
             selectedPageIndex = index;
+            if(index == 1){
+              isAppbarVisible = false;
+            }else {
+              isAppbarVisible = true;
+            }
           });
         },
         elevation: 2,
@@ -70,6 +75,7 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
           NavigationDestination(
               icon: Icon(selectedPageIndex == 1 ? Icons.navigation : Icons.navigation_outlined),
               label: "Navigation"
+
           ),
           NavigationDestination(
               icon: Icon(selectedPageIndex == 2 ? Icons.music_note : Icons.music_note_outlined),
