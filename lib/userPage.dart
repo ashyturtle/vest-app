@@ -17,97 +17,61 @@ class _UserPageState extends State<UserPage> {
         scrollDirection: Axis.vertical,
         padding: EdgeInsets.all(8),
         children: [
+
           Container(
-            height: 150,
-            child: InkWell(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => MyAccount()));
-              },
-              child: Card(
-                color: MyApp.secondaryColor,
-                child: Row(children: [
-                  SizedBox(width: 8),
-                  Icon(Icons.person, size: 30),
-                  Text(
-                    "My Account",
+            height: 75,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(width: 8),
+                Icon(Icons.fitness_center_rounded, size: 24),
+                SizedBox(width: 8,),
+                Text("Fitness",
                     style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      fontSize: 30,
-                    ),
-                  ),
-                ]),
-              ),
+                        fontSize: 24)),
+              ],
             ),
           ),
           Container(
-            height: 150,
-            child: Card(
+            height: 75,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HelpPage()));
+              },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   SizedBox(width: 8),
-                  Icon(Icons.fitness_center_rounded, size: 30),
-                  Text("Fitness",
+                  Icon(Icons.lightbulb_outline, size: 24),
+                  SizedBox(width: 8,),
+                  Text("Help",
                       style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.italic,
-                          fontSize: 30)),
+                          fontSize: 24)),
                 ],
               ),
-              color: MyApp.accentColor,
             ),
           ),
           Container(
-            height: 150,
+            height: 75,
             child: InkWell(
               onTap: () {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => HelpPage()));
               },
-              child: Card(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(width: 8),
-                    Icon(Icons.lightbulb_outline, size: 30),
-                    Text("Help",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.italic,
-                            fontSize: 30)),
-                  ],
-                ),
-                color: MyApp.accentColor,
-              ),
-            ),
-          ),
-          Container(
-            height: 150,
-            child: InkWell(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => HelpPage()));
-              },
-              child: Card(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(width: 8),
-                    Icon(Icons.settings, size: 30),
-                    Text("Settings",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.italic,
-                            fontSize: 30)),
-                  ],
-                ),
-                color: MyApp.accentColor,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(width: 8),
+                  Icon(Icons.settings, size: 24),
+                  SizedBox(width: 8),
+                  Text("Settings",
+                      style: TextStyle(
+                          fontSize: 24)),
+                ],
               ),
             ),
           ),
