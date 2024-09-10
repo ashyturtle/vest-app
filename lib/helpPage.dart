@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vest1/contactUs.dart';
+import 'package:vest1/homePage.dart';
 import 'package:vest1/main.dart';
 
 class HelpPage extends StatelessWidget {
@@ -19,7 +20,7 @@ class HelpPage extends StatelessWidget {
           children: <Widget>[
             InkWell(
               borderRadius: BorderRadius.all(Radius.circular(10)),
-              onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => HelpPage()));},
+              onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));},
               child: Container(
                 height: 100,
                 child: Row(
