@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
           surface: surfaceColor,
           background: backgroundColor,
           error: Colors.red,
-          onPrimary: Colors.black,
+          onPrimary: Colors.white,
           onSecondary: Colors.black,
           onBackground: Colors.white,
           onSurface: Colors.white,
