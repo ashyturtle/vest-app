@@ -190,22 +190,43 @@ class _HomePageState extends State<HomePage> {
                   showModalBottomSheet<void>(
                     context: context,
                     builder: (BuildContext context) {
-                      return SizedBox(
-                        height: 500,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              const Text('Modal BottomSheet'),
-                              ElevatedButton(
-                                child: const Text('Close BottomSheet'),
-                                onPressed: () => Navigator.pop(context),
-                              ),
+                      return DefaultTabController(
+                          length:3,
+                          child: SizedBox(
+                            height:350,
+                            child: TabBar(tabs: [
+                              Tab(child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+
+                                   Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.arrow_left_rounded),
+                                    Icon(Icons.arrow_right_rounded),
+                                  ],
+                                ),
                             ],
+                              ),
+                              ),
+                              Tab(child: Icon(Icons.auto_awesome),),
+                              Tab(child:Icon(Icons.car_crash))
+                            ],),
                           ),
-                        ),
-                      );
+                        );
+                        // child: Center(
+                        //   child: Column(
+                        //     mainAxisAlignment: MainAxisAlignment.center,
+                        //     mainAxisSize: MainAxisSize.min,
+                        //     children: <Widget>[
+                        //       const Text('Modal BottomSheet'),
+                        //       ElevatedButton(
+                        //         child: const Text('Close BottomSheet'),
+                        //         onPressed: () => Navigator.pop(context),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                     },
                   );
                 },
