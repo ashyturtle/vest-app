@@ -75,6 +75,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/sample3s.mp3
+    - assets/Logic - Paul Rodriguez.mp3
+    - assets/Logic - Sayonara.mp3
     - assets/.env
   # To add assets to your application, add an assets section, like this:
   # assets:
