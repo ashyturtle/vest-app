@@ -33,29 +33,27 @@ class _MusicPageState extends State<MusicPage> {
         tag: MediaItem(
           id: '1',
           title: 'Sample Track 1',
-          artUri: Uri.parse(
-              'https://images.genius.com/7822428a3d878d476d3549c9619c29f6.1000x1000x1.png'),
+          artUri: Uri.parse('https://images.genius.com/7822428a3d878d476d3549c9619c29f6.1000x1000x1.png'),
         ),
       ),
       AudioSource.uri(
-        Uri.parse('asset:///assets/Logic - Paul Rodriguez.mp3'),
+        Uri.parse('asset:///assets/Logic-PaulRodriguez.mp3'),
         tag: MediaItem(
           id: '2',
           title: 'Sample Track 2',
-          artUri: Uri.parse(
-              'https://images.genius.com/7822428a3d878d476d3549c9619c29f6.1000x1000x1.png'),
+          artUri: Uri.parse('https://images.genius.com/7822428a3d878d476d3549c9619c29f6.1000x1000x1.png'),
         ),
       ),
       AudioSource.uri(
-        Uri.parse('asset:///assets/Logic - Sayonara.mp3'),
+        Uri.parse('asset:///assets/Logic-Sayonara.mp3'),
         tag: MediaItem(
           id: '3',
           title: 'Sample Track 3',
-          artUri: Uri.parse(
-              'https://images.genius.com/7822428a3d878d476d3549c9619c29f6.1000x1000x1.png'),
+          artUri: Uri.parse('https://images.genius.com/7822428a3d878d476d3549c9619c29f6.1000x1000x1.png'),
         ),
       ),
     ]);
+
 
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.music());
