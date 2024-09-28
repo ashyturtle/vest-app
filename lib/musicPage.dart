@@ -3,6 +3,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:vest1/main.dart';
 
 class MusicPage extends StatefulWidget {
   const MusicPage({Key? key}) : super(key: key);
@@ -101,123 +102,126 @@ class _MusicPageState extends State<MusicPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          if (_artworkUrl != null)
-            Image.network(
-              _artworkUrl!,
-              width: 300,
-              height: 300,
-              errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.error),
-            ),
-          StreamBuilder<PositionData>(
-            stream: _positionDataStream,
-            builder: (context, snapshot) {
-              final positionData = snapshot.data;
-              return Column(
-                children: [
-                  Slider(
-                    min: 0.0,
-                    max:
-                    positionData?.duration.inMilliseconds.toDouble() ?? 0.0,
-                    value:
-                    positionData?.position.inMilliseconds.toDouble() ?? 0.0,
-                    onChanged: (value) {
-                      _audioPlayer
-                          .seek(Duration(milliseconds: value.round()));
-                    },
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _formatDuration(
-                            positionData?.position ?? Duration.zero),
-                      ),
-                      Text(
-                        _formatDuration(
-                            positionData?.duration ?? Duration.zero),
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            },
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.skip_previous),
-                iconSize: 64.0,
-                onPressed:
-                _audioPlayer.hasPrevious ? _audioPlayer.seekToPrevious : null,
+    return Container(
+      color: MyApp.backgroundColor,
+      child: Center(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            if (_artworkUrl != null)
+              Image.network(
+                _artworkUrl!,
+                width: 300,
+                height: 300,
+                errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.error),
               ),
-              StreamBuilder<bool>(
-                stream: _audioPlayer.playingStream,
-                builder: (context, snapshot) {
-                  bool isPlaying = snapshot.data ?? false;
-                  return IconButton(
-                    icon: Icon(
-                      isPlaying ? Icons.pause : Icons.play_arrow,
+            StreamBuilder<PositionData>(
+              stream: _positionDataStream,
+              builder: (context, snapshot) {
+                final positionData = snapshot.data;
+                return Column(
+                  children: [
+                    Slider(
+                      min: 0.0,
+                      max:
+                      positionData?.duration.inMilliseconds.toDouble() ?? 0.0,
+                      value:
+                      positionData?.position.inMilliseconds.toDouble() ?? 0.0,
+                      onChanged: (value) {
+                        _audioPlayer
+                            .seek(Duration(milliseconds: value.round()));
+                      },
                     ),
-                    iconSize: 64.0,
-                    onPressed: () {
-                      if (isPlaying) {
-                        _audioPlayer.pause();
-                      } else {
-                        _audioPlayer.play();
-                      }
-                    },
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.skip_next),
-                iconSize: 64.0,
-                onPressed:
-                _audioPlayer.hasNext ? _audioPlayer.seekToNext : null,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'Upcoming Tracks',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const Divider(),
-          // Track List
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _audioPlayer.sequence?.length ?? 0,
-            itemBuilder: (context, index) {
-              final sequence = _audioPlayer.sequence;
-              if (sequence == null || index >= sequence.length)
-                return Container();
-              final track = sequence[index];
-              final tag = track.tag as MediaItem;
-              return ListTile(
-                leading: Image.network(
-                  tag.artUri.toString(),
-                  width: 40,
-                  height: 40,
-                  errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.music_note),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _formatDuration(
+                              positionData?.position ?? Duration.zero),
+                        ),
+                        Text(
+                          _formatDuration(
+                              positionData?.duration ?? Duration.zero),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.skip_previous),
+                  iconSize: 64.0,
+                  onPressed:
+                  _audioPlayer.hasPrevious ? _audioPlayer.seekToPrevious : null,
                 ),
-                title: Text(tag.title),
-                onTap: () {
-                  _audioPlayer.seek(Duration.zero, index: index);
-                  _audioPlayer.play();
-                },
-              );
-            },
-          ),
-        ],
+                StreamBuilder<bool>(
+                  stream: _audioPlayer.playingStream,
+                  builder: (context, snapshot) {
+                    bool isPlaying = snapshot.data ?? false;
+                    return IconButton(
+                      icon: Icon(
+                        isPlaying ? Icons.pause : Icons.play_arrow,
+                      ),
+                      iconSize: 64.0,
+                      onPressed: () {
+                        if (isPlaying) {
+                          _audioPlayer.pause();
+                        } else {
+                          _audioPlayer.play();
+                        }
+                      },
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.skip_next),
+                  iconSize: 64.0,
+                  onPressed:
+                  _audioPlayer.hasNext ? _audioPlayer.seekToNext : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Upcoming Tracks',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const Divider(),
+            // Track List
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _audioPlayer.sequence?.length ?? 0,
+              itemBuilder: (context, index) {
+                final sequence = _audioPlayer.sequence;
+                if (sequence == null || index >= sequence.length)
+                  return Container();
+                final track = sequence[index];
+                final tag = track.tag as MediaItem;
+                return ListTile(
+                  leading: Image.network(
+                    tag.artUri.toString(),
+                    width: 40,
+                    height: 40,
+                    errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.music_note),
+                  ),
+                  title: Text(tag.title),
+                  onTap: () {
+                    _audioPlayer.seek(Duration.zero, index: index);
+                    _audioPlayer.play();
+                  },
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
