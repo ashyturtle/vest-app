@@ -264,15 +264,17 @@ class _HomePageState extends State<HomePage> {
                   // Dropdown for Left/Right Proximity Alerts
                   Text(
                     "Left/Right Proximity Alerts",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   DropdownButton<String>(
                     value: leftRightProximityAlertID,
-                    hint: Text("Select Pattern"),
+                    hint: Text("Select Pattern",
+                    style: TextStyle(color: Colors.white)),
                     items: vibrationPatterns.map((String pattern) {
                       return DropdownMenuItem<String>(
                         value: pattern,
-                        child: Text(pattern),
+                        child: Text(pattern,
+                            style: TextStyle(color: Colors.white)),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
@@ -287,15 +289,15 @@ class _HomePageState extends State<HomePage> {
                   // Dropdown for Navigation Alerts
                   Text(
                     "Navigation Alerts",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color:Colors.white),
                   ),
                   DropdownButton<String>(
                     value: navigationAlertID,
-                    hint: Text("Select Pattern"),
+                    hint: Text("Select Pattern",style: TextStyle(color: Colors.white)),
                     items: vibrationPatterns.map((String pattern) {
                       return DropdownMenuItem<String>(
                         value: pattern,
-                        child: Text(pattern),
+                        child: Text(pattern, style: TextStyle(color: Colors.white)),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
@@ -310,15 +312,15 @@ class _HomePageState extends State<HomePage> {
                   // Dropdown for Crash Detection Alerts
                   Text(
                     "Crash Detection Alerts",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   DropdownButton<String>(
                     value: crashDetectionAlertID,
-                    hint: Text("Select Pattern"),
+                    hint: Text("Select Pattern",style: TextStyle(color: Colors.white)),
                     items: vibrationPatterns.map((String pattern) {
                       return DropdownMenuItem<String>(
                         value: pattern,
-                        child: Text(pattern),
+                        child: Text(pattern, style: TextStyle(color: Colors.white)),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
