@@ -12,6 +12,18 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool isConnected = true;
   double batteryPercentage = 0.67;
+  final List<String> vibrationPatterns = [
+    'Pattern 1',
+    'Pattern 2',
+    'Pattern 3',
+    'Pattern 4',
+    'Pattern 5',
+  ];
+
+  // Variables to store selected IDs for each category
+  String? leftRightProximityAlertID;
+  String? navigationAlertID;
+  String? crashDetectionAlertID;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -185,100 +197,143 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              InkWell(
-                onTap: (){
-                  showModalBottomSheet<void>(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return DefaultTabController(
-                          length:3,
-                          child: SizedBox(
-                            height:350,
-                            child: TabBar(tabs: [
-                              Tab(child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-
-                                   Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.arrow_left_rounded),
-                                    Icon(Icons.arrow_right_rounded),
-                                  ],
-                                ),
-                            ],
-                              ),
-                              ),
-                              Tab(child: Icon(Icons.auto_awesome),),
-                              Tab(child:Icon(Icons.car_crash))
-                            ],),
-                          ),
-                        );
-                        // child: Center(
-                        //   child: Column(
-                        //     mainAxisAlignment: MainAxisAlignment.center,
-                        //     mainAxisSize: MainAxisSize.min,
-                        //     children: <Widget>[
-                        //       const Text('Modal BottomSheet'),
-                        //       ElevatedButton(
-                        //         child: const Text('Close BottomSheet'),
-                        //         onPressed: () => Navigator.pop(context),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                    },
-                  );
-                },
-                child: Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text("Vibration\n Pattern",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-
-                              ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(40), color: MyApp.accentColor),
-                              width: 40,
-                              height: 40,
-                              child: Icon(Icons.vibration),
-                            )
-                          ],
+        InkWell(
+          child: Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Vibration\n Pattern",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
                         ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Selected Pattern",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18
-                              ),
-                            ),
-                            Text("Name",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24
-                              ),)
-
-                          ],
-                        )
-                      ],
-                    ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(40),
+                          color: MyApp.accentColor,
+                        ),
+                        width: 40,
+                        height: 40,
+                        child: Icon(Icons.vibration),
+                      ),
+                    ],
                   ),
-                ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Left/Right Proximity Alert: ${leftRightProximityAlertID ?? "Not Set"}",
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                      Text(
+                        "Navigation Alert: ${navigationAlertID ?? "Not Set"}",
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                      Text(
+                        "Crash Detection Alert: ${crashDetectionAlertID ?? "Not Set"}",
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ],
               ),
+            ),
+          ),
+        onTap: () {
+      showModalBottomSheet<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return SizedBox(
+            height: 350,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  // Dropdown for Left/Right Proximity Alerts
+                  Text(
+                    "Left/Right Proximity Alerts",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  DropdownButton<String>(
+                    value: leftRightProximityAlertID,
+                    hint: Text("Select Pattern"),
+                    items: vibrationPatterns.map((String pattern) {
+                      return DropdownMenuItem<String>(
+                        value: pattern,
+                        child: Text(pattern),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        leftRightProximityAlertID = newValue;
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                  SizedBox(height: 20),
+
+                  // Dropdown for Navigation Alerts
+                  Text(
+                    "Navigation Alerts",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  DropdownButton<String>(
+                    value: navigationAlertID,
+                    hint: Text("Select Pattern"),
+                    items: vibrationPatterns.map((String pattern) {
+                      return DropdownMenuItem<String>(
+                        value: pattern,
+                        child: Text(pattern),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        navigationAlertID = newValue;
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                  SizedBox(height: 20),
+
+                  // Dropdown for Crash Detection Alerts
+                  Text(
+                    "Crash Detection Alerts",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  DropdownButton<String>(
+                    value: crashDetectionAlertID,
+                    hint: Text("Select Pattern"),
+                    items: vibrationPatterns.map((String pattern) {
+                      return DropdownMenuItem<String>(
+                        value: pattern,
+                        child: Text(pattern),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        crashDetectionAlertID = newValue;
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );}),
               InkWell(
                 onTap: (){
                   showModalBottomSheet<void>(
