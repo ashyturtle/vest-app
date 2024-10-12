@@ -1,4 +1,4 @@
-package com.codingmind.vest
+package com.codingmind.pulsepath
 
 import io.flutter.embedding.android.FlutterActivity
 

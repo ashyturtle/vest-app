@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDdX5XT0AQaSDnVKgadKRm3r5BBTf4opNw',
-    appId: '1:4418350768:android:5ec5adb27e499fe6689575',
+    appId: '1:4418350768:android:516ba44928f30a01689575',
     messagingSenderId: '4418350768',
     projectId: 'vest-ceee5',
     storageBucket: 'vest-ceee5.appspot.com',
@@ -59,10 +59,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBkCQ03jaP9-FBYwjl9yYJBnv3PHOlViAE',
-    appId: '1:4418350768:ios:f416a95c8e381167689575',
+    appId: '1:4418350768:ios:59029c6b90bffa5a689575',
     messagingSenderId: '4418350768',
     projectId: 'vest-ceee5',
     storageBucket: 'vest-ceee5.appspot.com',
-    iosBundleId: 'com.example.vest1',
+    iosBundleId: 'com.codingmind.pulsepath',
   );
+
 }

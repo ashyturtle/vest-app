@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:4418350768:android:516ba44928f30a01689575",
+        "android_client_info": {
+          "package_name": "com.codingmind.pulsepath"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdX5XT0AQaSDnVKgadKRm3r5BBTf4opNw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:4418350768:android:5ec5adb27e499fe6689575",
         "android_client_info": {
           "package_name": "com.codingmind.vest"
