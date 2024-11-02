@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:vest1/components/SlidingAppbar.dart';
-import 'package:vest1/features/app/home/home_page.dart';
 import 'package:vest1/homePage.dart';
 import 'package:vest1/musicPage.dart';
 import 'package:vest1/navigationPage.dart';
@@ -17,7 +16,7 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
   int selectedPageIndex = 0;
   final List<Widget> pages = [
     HomePage(),
-    MapHomePage(),
+    MapPage(),
     MusicPage(),
     UserPage()
   ];
