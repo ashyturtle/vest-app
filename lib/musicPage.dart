@@ -103,7 +103,7 @@ class _MusicPageState extends State<MusicPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: MyApp.backgroundColor,
+      color: MyApp.surfaceColor,
       child: Center(
         child: ListView(
           shrinkWrap: true,

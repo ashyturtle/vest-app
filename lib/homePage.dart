@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MyApp.backgroundColor,
+      backgroundColor: MyApp.surfaceColor,
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: GridView.count(

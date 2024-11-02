@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
     appId: '1:4418350768:android:516ba44928f30a01689575',
     messagingSenderId: '4418350768',
     projectId: 'vest-ceee5',
-    storageBucket: 'vest-ceee5.appspot.com',
+    storageBucket: 'vest-ceee5.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -62,7 +62,7 @@ class DefaultFirebaseOptions {
     appId: '1:4418350768:ios:59029c6b90bffa5a689575',
     messagingSenderId: '4418350768',
     projectId: 'vest-ceee5',
-    storageBucket: 'vest-ceee5.appspot.com',
+    storageBucket: 'vest-ceee5.firebasestorage.app',
     iosBundleId: 'com.codingmind.pulsepath',
   );
 

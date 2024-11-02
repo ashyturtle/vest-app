@@ -8,7 +8,7 @@ class MusicPlayerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: MyApp.backgroundColor,
+      color: MyApp.surfaceColor,
             padding: const EdgeInsets.all(20),
             height: double.infinity,
             width: double.infinity,

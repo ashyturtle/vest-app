@@ -1,25 +1,28 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:vest1/SplashScreen.dart';
-import 'package:vest1/musicPlayerPage.dart';
-import 'package:vest1/route.dart';
 
-void main() {
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  static const Color primaryColor = Color(0xFFF4E04D);
-  static const Color secondaryColor = Color(0xFFC5FFFD);
-  static const Color accentColor = Color(0xFF99C5FF);
-  static const Color backgroundColor = Color(0xFFD6D7D7);
-  static const Color surfaceColor = Color(0xFF2D3142);
 
+  // Define your custom colors
+  static final Color primaryColor = Color(0xfff4ac4e);
+  static final Color secondaryColor = Color(0xFFF88444);
+  static final Color surfaceColor = Color(0xFFFFE4CB);
+  static final Color accentColor = Color(0xFF271E18);
+
+  // Create a custom ColorScheme
   static final ColorScheme scheme = ColorScheme(
     brightness: Brightness.light,
     primary: primaryColor,
-    onPrimary: surfaceColor,
+    onPrimary: accentColor,
     secondary: secondaryColor,
     onSecondary: accentColor,
     error: Colors.red,
@@ -29,11 +32,13 @@ class MyApp extends StatelessWidget {
     surface: surfaceColor,
     onSurface: accentColor,
   );
-  // This widget is the root of your application.
+
+  // Build the MaterialApp with the custom ThemeData
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'Scooter Safety Application',
       theme: ThemeData(
         colorScheme: scheme,
         // Optionally, set other theme properties
@@ -48,10 +53,45 @@ class MyApp extends StatelessWidget {
           bodyMedium: TextStyle(color: scheme.onBackground),
           bodySmall: TextStyle(color: scheme.onBackground),
         ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.0), // Rounded corners
+            borderSide: BorderSide(
+              color: accentColor, // Default border color
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24.0),
+            borderSide: BorderSide(
+              color: secondaryColor, // Border color when selected
+              width: 2.0,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24.0),
+            borderSide: BorderSide(
+              color: accentColor, // Border color when not selected
+              width: 1.5,
+            ),
+          ),
+          labelStyle: TextStyle(color: accentColor), // Label text color
+          floatingLabelStyle: TextStyle(color: secondaryColor), // Label color when focused
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+    backgroundColor: secondaryColor, // Use secondary color
+    foregroundColor: scheme.onSecondary, // Ensure text is readable
+    textStyle: const TextStyle(fontWeight: FontWeight.bold),
+    ),
+    ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: secondaryColor
+          )
+        )
         // You can define more theme properties as needed
       ),
-      home: RoutePage()
+      home: SplashScreen(),
     );
   }
 }
-

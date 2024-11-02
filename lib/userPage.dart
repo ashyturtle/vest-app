@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vest1/accountInformation.dart';
+import 'package:vest1/deviceSettings.dart';
 import 'package:vest1/helpPage.dart';
 import 'package:vest1/main.dart';
 import 'package:vest1/myAccount.dart';
@@ -18,7 +19,7 @@ class _UserPageState extends State<UserPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: MyApp.backgroundColor,
+      color: MyApp.surfaceColor,
       child: ListView(
           scrollDirection: Axis.vertical,
           padding: EdgeInsets.all(8),
@@ -136,6 +137,34 @@ class _UserPageState extends State<UserPage> {
                             SizedBox(width: 8,),
                             Text(
                               "Settings",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w200,
+                                fontSize: 25,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Icon(Icons.chevron_right)
+                      ])),
+            ),
+            SizedBox(height: 16,),
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => DeviceSettingsPage()));
+              },
+              child: Container(
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.settings_bluetooth),
+                            SizedBox(width: 8,),
+                            Text(
+                              "Pair your Device",
                               style: TextStyle(
                                 fontWeight: FontWeight.w200,
                                 fontSize: 25,
