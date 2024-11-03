@@ -50,8 +50,9 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: scheme.surface,
         textTheme: TextTheme(
-          bodyMedium: TextStyle(color: scheme.onBackground),
-          bodySmall: TextStyle(color: scheme.onBackground),
+
+          bodyMedium: TextStyle(color: accentColor),
+          bodySmall: TextStyle(color: accentColor),
         ),
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
@@ -88,8 +89,16 @@ class MyApp extends StatelessWidget {
           style: TextButton.styleFrom(
             foregroundColor: secondaryColor
           )
-        )
-        // You can define more theme properties as needed
+        ),
+        cardTheme: CardTheme(
+          color: primaryColor,
+          elevation: 2,
+
+        ),
+        iconTheme: IconThemeData(
+          fill: 1,
+          color: accentColor,
+        ),
       ),
       home: SplashScreen(),
     );

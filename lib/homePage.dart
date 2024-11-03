@@ -74,13 +74,14 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             Text("Connection",
                             style: TextStyle(
-                                color: Colors.white,
+                              color: MyApp.accentColor,
                                 fontSize: 24,
 
                             ),
                             ),
                             Container(
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(40), color: MyApp.accentColor),
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(40), color: MyApp.secondaryColor),
+
                               width: 40,
                               height: 40,
                               child: isConnected ? Icon(Icons.signal_cellular_alt): Icon(Icons.signal_cellular_null),
@@ -93,13 +94,13 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             Text("Device Name",
                                 style: TextStyle(
-                                    color: Colors.white,
+                                    color: MyApp.accentColor,
                                     fontSize: 18
                                 ),
                             ),
                             Text("12:00",
                               style: TextStyle(
-                                color: Colors.white,
+                                  color: MyApp.accentColor,
                                 fontSize: 24
                             ),)
 
@@ -147,13 +148,13 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             Text("Battery",
                               style: TextStyle(
-                                color: Colors.white,
+                                color: MyApp.accentColor,
                                 fontSize: 24,
 
                               ),
                             ),
                             Container(
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(40), color: MyApp.accentColor),
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(40), color: MyApp.secondaryColor),
                               width: 40,
                               height: 40,
                               child: Builder(builder: (context) {
@@ -180,13 +181,13 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             Text("Time Remaining",
                               style: TextStyle(
-                                  color: Colors.white,
+                                  color: MyApp.accentColor,
                                   fontSize: 18
                               ),
                             ),
                             Text("5 Hours",
                               style: TextStyle(
-                                  color: Colors.white,
+                                  color: MyApp.accentColor,
                                   fontSize: 24
                               ),)
 
@@ -212,15 +213,13 @@ class _HomePageState extends State<HomePage> {
                       Text(
                         "Vibration\n Pattern",
                         style: TextStyle(
-                          color: Colors.white,
+                          color: MyApp.accentColor,
                           fontSize: 24,
                         ),
                       ),
                       Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(40),
-                          color: MyApp.accentColor,
-                        ),
+                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(40), color: MyApp.secondaryColor),
+
                         width: 40,
                         height: 40,
                         child: Icon(Icons.vibration),
@@ -233,15 +232,21 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Text(
                         "Left/Right Proximity Alert: ${leftRightProximityAlertID ?? "Not Set"}",
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+                        style: TextStyle(
+                            color: MyApp.accentColor,
+                            fontSize: 12),
                       ),
                       Text(
                         "Navigation Alert: ${navigationAlertID ?? "Not Set"}",
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+                        style: TextStyle(
+                            color: MyApp.accentColor,
+                            fontSize: 12),
                       ),
                       Text(
                         "Crash Detection Alert: ${crashDetectionAlertID ?? "Not Set"}",
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+                        style: TextStyle(
+                            color: MyApp.accentColor,
+                            fontSize: 12),
                       ),
                     ],
                   ),
@@ -264,17 +269,19 @@ class _HomePageState extends State<HomePage> {
                   // Dropdown for Left/Right Proximity Alerts
                   Text(
                     "Left/Right Proximity Alerts",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: MyApp.accentColor,),
                   ),
                   DropdownButton<String>(
                     value: leftRightProximityAlertID,
                     hint: Text("Select Pattern",
-                    style: TextStyle(color: Colors.white)),
+                    style: TextStyle(
+                      color: MyApp.accentColor,
+                    )),
                     items: vibrationPatterns.map((String pattern) {
                       return DropdownMenuItem<String>(
                         value: pattern,
                         child: Text(pattern,
-                            style: TextStyle(color: Colors.white)),
+                            style: TextStyle(color: MyApp.accentColor,)),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
@@ -289,15 +296,15 @@ class _HomePageState extends State<HomePage> {
                   // Dropdown for Navigation Alerts
                   Text(
                     "Navigation Alerts",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color:Colors.white),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: MyApp.accentColor,),
                   ),
                   DropdownButton<String>(
                     value: navigationAlertID,
-                    hint: Text("Select Pattern",style: TextStyle(color: Colors.white)),
+                    hint: Text("Select Pattern",style: TextStyle(color: MyApp.accentColor,)),
                     items: vibrationPatterns.map((String pattern) {
                       return DropdownMenuItem<String>(
                         value: pattern,
-                        child: Text(pattern, style: TextStyle(color: Colors.white)),
+                        child: Text(pattern, style: TextStyle(color: MyApp.accentColor,)),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
@@ -312,15 +319,15 @@ class _HomePageState extends State<HomePage> {
                   // Dropdown for Crash Detection Alerts
                   Text(
                     "Crash Detection Alerts",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: MyApp.accentColor,),
                   ),
                   DropdownButton<String>(
                     value: crashDetectionAlertID,
-                    hint: Text("Select Pattern",style: TextStyle(color: Colors.white)),
+                    hint: Text("Select Pattern",style: TextStyle(color: MyApp.accentColor,)),
                     items: vibrationPatterns.map((String pattern) {
                       return DropdownMenuItem<String>(
                         value: pattern,
-                        child: Text(pattern, style: TextStyle(color: Colors.white)),
+                        child: Text(pattern, style: TextStyle(color: MyApp.accentColor,)),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
@@ -373,13 +380,13 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             Text("Updates",
                               style: TextStyle(
-                                color: Colors.white,
+                                color: MyApp.accentColor,
                                 fontSize: 24,
 
                               ),
                             ),
                             Container(
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(40), color: MyApp.accentColor),
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(40), color: MyApp.secondaryColor),
                               width: 40,
                               height: 40,
                               child: Icon(Icons.notifications_active),
@@ -392,13 +399,13 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             Text("New",
                               style: TextStyle(
-                                  color: Colors.white,
+                                  color: MyApp.accentColor,
                                   fontSize: 18
                               ),
                             ),
                             Text("12",
                               style: TextStyle(
-                                  color: Colors.white,
+                                  color: MyApp.accentColor,
                                   fontSize: 24
                               ),)
                           ],
