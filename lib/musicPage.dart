@@ -1,40 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:audio_session/audio_session.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:rxdart/rxdart.dart';
-import 'package:vest1/main.dart';
 
-class MusicPage extends StatefulWidget {
-  const MusicPage({Key? key}) : super(key: key);
+// Define a custom AudioPlayerHandler
+class MyAudioHandler extends BaseAudioHandler {
+  final AudioPlayer _player = AudioPlayer();
 
-  @override
-  State<MusicPage> createState() => _MusicPageState();
-}
+  MyAudioHandler() {
+    // Listen for current index changes to update media item
+    _player.currentIndexStream.listen((index) {
+      if (index != null && _player.sequence != null) {
+        final mediaItem = _player.sequence![index].tag as MediaItem;
+        mediaItemSubject.add(mediaItem); // Update the currently playing media item
+      }
+    });
 
-class _MusicPageState extends State<MusicPage> {
-  late AudioPlayer _audioPlayer;
-  String? _artworkUrl;
-
-  late ConcatenatingAudioSource _playlist;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializePlayer();
+    // Listen for playback state changes
+    _player.playbackEventStream.listen((event) {
+      playbackState.add(playbackState.value.copyWith(
+        controls: [
+          MediaControl.skipToPrevious,
+          _player.playing ? MediaControl.pause : MediaControl.play,
+          MediaControl.stop,
+          MediaControl.skipToNext,
+        ],
+        systemActions: const {
+          MediaAction.seek,
+          MediaAction.skipToNext,
+          MediaAction.skipToPrevious,
+        },
+        playing: _player.playing,
+        processingState: {
+          ProcessingState.idle: AudioProcessingState.idle,
+          ProcessingState.loading: AudioProcessingState.loading,
+          ProcessingState.buffering: AudioProcessingState.buffering,
+          ProcessingState.ready: AudioProcessingState.ready,
+          ProcessingState.completed: AudioProcessingState.completed,
+        }[_player.processingState]!,
+        updatePosition: _player.position,
+        bufferedPosition: _player.bufferedPosition,
+        speed: _player.speed,
+        queueIndex: event.currentIndex,
+      ));
+    });
   }
 
-  Future<void> _initializePlayer() async {
-    _audioPlayer = AudioPlayer();
+  @override
+  Future<void> play() => _player.play();
+  @override
+  Future<void> pause() => _player.pause();
+  @override
+  Future<void> skipToNext() => _player.seekToNext();
+  @override
+  Future<void> skipToPrevious() => _player.seekToPrevious();
+  @override
+  Future<void> seek(Duration position) => _player.seek(position);
 
-    // Define your playlist with multiple tracks using AudioSource.uri
-    _playlist = ConcatenatingAudioSource(children: [
+  Future<void> loadPlaylist() async {
+    final playlist = ConcatenatingAudioSource(children: [
       AudioSource.uri(
         Uri.parse('asset:///assets/sample3s.mp3'),
         tag: MediaItem(
           id: '1',
           title: 'Sample Track 1',
-          artUri: Uri.parse('https://images.genius.com/7822428a3d878d476d3549c9619c29f6.1000x1000x1.png'),
+          artUri: Uri.parse(
+              'https://images.genius.com/7822428a3d878d476d3549c9619c29f6.1000x1000x1.png'),
         ),
       ),
       AudioSource.uri(
@@ -42,7 +73,8 @@ class _MusicPageState extends State<MusicPage> {
         tag: MediaItem(
           id: '2',
           title: 'Sample Track 2',
-          artUri: Uri.parse('https://images.genius.com/7822428a3d878d476d3549c9619c29f6.1000x1000x1.png'),
+          artUri: Uri.parse(
+              'https://images.genius.com/7822428a3d878d476d3549c9619c29f6.1000x1000x1.png'),
         ),
       ),
       AudioSource.uri(
@@ -50,195 +82,72 @@ class _MusicPageState extends State<MusicPage> {
         tag: MediaItem(
           id: '3',
           title: 'Sample Track 3',
-          artUri: Uri.parse('https://images.genius.com/7822428a3d878d476d3549c9619c29f6.1000x1000x1.png'),
+          artUri: Uri.parse(
+              'https://images.genius.com/7822428a3d878d476d3549c9619c29f6.1000x1000x1.png'),
         ),
       ),
     ]);
 
-
-    final session = await AudioSession.instance;
-    await session.configure(const AudioSessionConfiguration.music());
-
-    // Load the playlist
     try {
-      await _audioPlayer.setAudioSource(_playlist);
+      await _player.setAudioSource(playlist);
     } catch (e) {
-      print("Error loading audio source: $e");
+      print("Error loading playlist: $e");
     }
-
-    // Listen for playback completion to reset the player
-    _audioPlayer.processingStateStream.listen((state) {
-      if (state == ProcessingState.completed) {
-        _audioPlayer.seek(Duration.zero, index: 0);
-        _audioPlayer.pause();
-      }
-    });
-
-    // Update artwork URL when the current track changes
-    _audioPlayer.currentIndexStream.listen((index) {
-      if (index != null && _audioPlayer.sequence != null) {
-        final tag = _audioPlayer.sequence![index].tag as MediaItem;
-        setState(() {
-          _artworkUrl = tag.artUri.toString();
-        });
-      }
-    });
   }
+}
 
+// Background task entrypoint
+void _audioTaskEntrypoint() {
+  AudioServiceBackground.run(() => MyAudioHandler());
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await JustAudioBackground.init();
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
   @override
-  void dispose() {
-    _audioPlayer.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Audio Service Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MusicPage(),
+    );
   }
+}
 
-  // Stream to update the position and duration
-  Stream<PositionData> get _positionDataStream =>
-      Rx.combineLatest2<Duration, Duration, PositionData>(
-        _audioPlayer.positionStream,
-        _audioPlayer.durationStream
-            .map((duration) => duration ?? Duration.zero),
-            (position, duration) => PositionData(position, duration),
-      );
+class MusicPage extends StatelessWidget {
+  const MusicPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: MyApp.surfaceColor,
-      child: Center(
-        child: ListView(
-          shrinkWrap: true,
-          padding: const EdgeInsets.all(16.0),
-          children: [
-            if (_artworkUrl != null)
-              Image.network(
-                _artworkUrl!,
-                width: 300,
-                height: 300,
-                errorBuilder: (context, error, stackTrace) =>
-                const Icon(Icons.error),
-              ),
-            StreamBuilder<PositionData>(
-              stream: _positionDataStream,
-              builder: (context, snapshot) {
-                final positionData = snapshot.data;
-                return Column(
-                  children: [
-                    Slider(
-                      min: 0.0,
-                      max:
-                      positionData?.duration.inMilliseconds.toDouble() ?? 0.0,
-                      value:
-                      positionData?.position.inMilliseconds.toDouble() ?? 0.0,
-                      onChanged: (value) {
-                        _audioPlayer
-                            .seek(Duration(milliseconds: value.round()));
-                      },
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _formatDuration(
-                              positionData?.position ?? Duration.zero),
-                        ),
-                        Text(
-                          _formatDuration(
-                              positionData?.duration ?? Duration.zero),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              },
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.skip_previous),
-                  iconSize: 64.0,
-                  onPressed:
-                  _audioPlayer.hasPrevious ? _audioPlayer.seekToPrevious : null,
-                ),
-                StreamBuilder<bool>(
-                  stream: _audioPlayer.playingStream,
-                  builder: (context, snapshot) {
-                    bool isPlaying = snapshot.data ?? false;
-                    return IconButton(
-                      icon: Icon(
-                        isPlaying ? Icons.pause : Icons.play_arrow,
-                      ),
-                      iconSize: 64.0,
-                      onPressed: () {
-                        if (isPlaying) {
-                          _audioPlayer.pause();
-                        } else {
-                          _audioPlayer.play();
-                        }
-                      },
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.skip_next),
-                  iconSize: 64.0,
-                  onPressed:
-                  _audioPlayer.hasNext ? _audioPlayer.seekToNext : null,
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Upcoming Tracks',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const Divider(),
-            // Track List
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _audioPlayer.sequence?.length ?? 0,
-              itemBuilder: (context, index) {
-                final sequence = _audioPlayer.sequence;
-                if (sequence == null || index >= sequence.length)
-                  return Container();
-                final track = sequence[index];
-                final tag = track.tag as MediaItem;
-                return ListTile(
-                  leading: Image.network(
-                    tag.artUri.toString(),
-                    width: 40,
-                    height: 40,
-                    errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.music_note),
-                  ),
-                  title: Text(tag.title),
-                  onTap: () {
-                    _audioPlayer.seek(Duration.zero, index: index);
-                    _audioPlayer.play();
-                  },
-                );
-              },
-            ),
-          ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Music Player'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () async {
+            if (AudioService.running) {
+              await AudioService.stop();
+            } else {
+              await AudioService.start(
+                backgroundTaskEntrypoint: _audioTaskEntrypoint,
+                androidNotificationChannelName: 'Music Player',
+                androidNotificationOngoing: true,
+              );
+              final handler = AudioServiceBackground.handler as MyAudioHandler;
+              await handler.loadPlaylist();
+              await handler.play();
+            }
+          },
+          child: const Text('Play Music'),
         ),
       ),
     );
   }
-
-  // Helper method to format duration
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return "$minutes:$seconds";
-  }
-}
-
-// Class to hold position data
-class PositionData {
-  final Duration position;
-  final Duration duration;
-
-  PositionData(this.position, this.duration);
 }
