@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:vest1/audioHandler.dart';
 import 'package:vest1/components/SlidingAppbar.dart';
 import 'package:vest1/homePage.dart';
 import 'package:vest1/musicPage.dart';
 import 'package:vest1/navigationPage.dart';
 import 'package:vest1/userPage.dart';
+
+// Import audio service and just_audio_background
+import 'package:audio_service/audio_service.dart';
+import 'package:just_audio_background/just_audio_background.dart';
+import 'audioHandler.dart';
 
 class RoutePage extends StatefulWidget {
   const RoutePage({super.key});
@@ -14,21 +20,57 @@ class RoutePage extends StatefulWidget {
 
 class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMixin {
   int selectedPageIndex = 0;
-  final List<Widget> pages = [
-    HomePage(),
-    MapPage(),
-    MusicPage(),
-    UserPage()
-  ];
   late final AnimationController _controller;
+
+  AudioHandler? _audioHandler;
+  List<Widget> pages = [];
 
   @override
   void initState() {
     super.initState();
+
+    // Set up the animation controller for the sliding appbar
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 400),
     );
+
+    // Initialize Audio Service and Handler
+    _initAudio();
+  }
+
+  Future<void> _initAudio() async {
+    // Initialize JustAudioBackground for metadata and lock screen controls
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'com.codingmind.pulsepath.audio',
+      androidNotificationChannelName: 'Music Playback',
+      androidNotificationOngoing: true,
+    );
+
+    // Initialize the AudioHandler
+    final handler = await AudioService.init(
+      builder: () => MyAudioHandler(),
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'com.codingmind.pulsepath.audio',
+        androidNotificationChannelName: 'Music Playback',
+        androidNotificationOngoing: true,
+      ),
+    );
+
+// Cast the handler to MyAudioHandler
+    final myHandler = handler;
+
+    setState(() {
+      _audioHandler = myHandler; // _audioHandler should be of type MyAudioHandler?
+
+      pages = [
+        HomePage(),
+        MapPage(),
+        MusicPage(audioHandler: _audioHandler as MyAudioHandler), // Pass MyAudioHandler here
+        UserPage(),
+      ];
+    });
+
   }
 
   @override
@@ -42,6 +84,13 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
     // Hide AppBar only for NavigationPage
     bool isAppbarVisible = selectedPageIndex != 1;
 
+    // If _audioHandler is not ready yet, show a loading indicator
+    if (_audioHandler == null) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: isAppbarVisible
           ? SlidingAppbar(
@@ -52,16 +101,16 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
           elevation: 2,
         ),
       )
-          : null, // Set appBar to null for full screen on NavigationPage
+          : null,
       body: pages[selectedPageIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedPageIndex,
         onDestinationSelected: (int index) {
           setState(() {
             selectedPageIndex = index;
-            if(index == 1){
+            if (index == 1) {
               isAppbarVisible = false;
-            }else {
+            } else {
               isAppbarVisible = true;
             }
           });
@@ -75,7 +124,6 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
           NavigationDestination(
               icon: Icon(selectedPageIndex == 1 ? Icons.navigation : Icons.navigation_outlined),
               label: "Navigation"
-
           ),
           NavigationDestination(
               icon: Icon(selectedPageIndex == 2 ? Icons.music_note : Icons.music_note_outlined),
