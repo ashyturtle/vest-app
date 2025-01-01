@@ -22,8 +22,12 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
   int selectedPageIndex = 0;
   late final AnimationController _controller;
 
-  AudioHandler? _audioHandler;
-  List<Widget> pages = [];
+  List<Widget> pages = [
+    HomePage(),
+    MapPage(),
+    //MusicPage(audioHandler: audioHandler),
+    UserPage(),
+  ];
 
   @override
   void initState() {
@@ -36,42 +40,42 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
     );
 
     // Initialize Audio Service and Handler
-    _initAudio();
+    //_initAudio();
   }
 
-  Future<void> _initAudio() async {
-    // Initialize JustAudioBackground for metadata and lock screen controls
-    await JustAudioBackground.init(
-      androidNotificationChannelId: 'com.codingmind.pulsepath.audio',
-      androidNotificationChannelName: 'Music Playback',
-      androidNotificationOngoing: true,
-    );
-
-    // Initialize the AudioHandler
-    final handler = await AudioService.init(
-      builder: () => MyAudioHandler(),
-      config: const AudioServiceConfig(
-        androidNotificationChannelId: 'com.codingmind.pulsepath.audio',
-        androidNotificationChannelName: 'Music Playback',
-        androidNotificationOngoing: true,
-      ),
-    );
-
-// Cast the handler to MyAudioHandler
-    final myHandler = handler;
-
-    setState(() {
-      _audioHandler = myHandler; // _audioHandler should be of type MyAudioHandler?
-
-      pages = [
-        HomePage(),
-        MapPage(),
-        MusicPage(audioHandler: _audioHandler as MyAudioHandler), // Pass MyAudioHandler here
-        UserPage(),
-      ];
-    });
-
-  }
+//   Future<void> _initAudio() async {
+//     // Initialize JustAudioBackground for metadata and lock screen controls
+//     await JustAudioBackground.init(
+//       androidNotificationChannelId: 'com.codingmind.pulsepath.audio',
+//       androidNotificationChannelName: 'Audio Playback',
+//       androidNotificationOngoing: true,
+//     );
+//
+//     // Initialize the AudioHandler
+//     final handler = await AudioService.init(
+//       builder: () => MyAudioHandler(),
+//       config: const AudioServiceConfig(
+//         androidNotificationChannelId: 'com.codingmind.pulsepath.audio',
+//         androidNotificationChannelName: 'Music Playback',
+//         androidNotificationOngoing: true,
+//       ),
+//     );
+//
+// // Cast the handler to MyAudioHandler
+//     final myHandler = handler;
+//
+//     setState(() {
+//       _audioHandler = myHandler; // _audioHandler should be of type MyAudioHandler?
+//
+//       pages = [
+//         HomePage(),
+//         MapPage(),
+//         MusicPage(audioHandler: _audioHandler as MyAudioHandler), // Pass MyAudioHandler here
+//         UserPage(),
+//       ];
+//     });
+//
+//   }
 
   @override
   void dispose() {
@@ -85,11 +89,11 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
     bool isAppbarVisible = selectedPageIndex != 1;
 
     // If _audioHandler is not ready yet, show a loading indicator
-    if (_audioHandler == null) {
-      return Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
+    // if (_audioHandler == null) {
+    //   return Scaffold(
+    //     body: Center(child: CircularProgressIndicator()),
+    //   );
+    // }
 
     return Scaffold(
       appBar: isAppbarVisible

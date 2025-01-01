@@ -41,11 +41,11 @@
         </activity>
 
         <activity
-            android:name="com.ryanheise.audioservice.AudioServiceActivity" />
+            android:name="com.codingmind.pulsepath.audioActivity" />
 
 
         <service
-            android:name="com.ryanheise.audioservice.AudioService"
+            android:name="com.codingmind.pulsepath.AudioService"
             android:foregroundServiceType="mediaPlayback"
             android:exported="true"
             tools:ignore="Instantiatable">
@@ -63,7 +63,7 @@
             android:value="AIzaSyAMcAD8QZtv_rfebJngg3qXMqmXdbEc-2Y" />
 
         <receiver
-            android:name="com.ryanheise.audioservice.MediaButtonReceiver"
+            android:name="com.codingmind.pulsepath.audioservice.MediaButtonReceiver"
             android:exported="true"
             tools:ignore="Instantiatable">
             <intent-filter>

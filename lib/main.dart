@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Scooter Safety Application',
+      title: 'PulsePath',
       theme: ThemeData(
         colorScheme: scheme,
         // Optionally, set other theme properties
