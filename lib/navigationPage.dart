@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -329,11 +328,10 @@ class _MapPageState extends State<MapPage> {
                 _controller.setMapStyle(c);
               },
               markers: {
-                if (_currentLatLng != null)
-                  Marker(
-                    markerId: const MarkerId("1"),
-                    position: _currentLatLng!,
-                  ),
+                Marker(
+                  markerId: const MarkerId("1"),
+                  position: _currentLatLng,
+                ),
               },
 
             ),

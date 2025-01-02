@@ -40,11 +40,7 @@ dependencies:
   dotenv: ^4.2.0
   flutter_dotenv: ^5.1.0
   cached_network_image: ^3.3.1
-  audio_video_progress_bar: ^2.0.3
-  just_audio_background: ^0.0.1-beta.13
-  just_audio: ^0.9.42
   rxdart: ^0.28.0
-  audio_session: ^0.1.21
   firebase_core: ^3.3.0
   firebase_auth: ^5.1.4
   cloud_firestore: ^5.2.1
@@ -64,7 +60,7 @@ dependencies:
   freezed: ^2.5.7
   flutter_typeahead: ^5.2.0
   http: ^1.2.2
-  audio_service: ^0.18.15
+  nowplaying: ^3.0.3
 
 dev_dependencies:
   flutter_test:
@@ -91,7 +87,7 @@ flutter:
     - assets/sample3s.mp3
     - assets/Logic - Paul Rodriguez.mp3
     - assets/Logic - Sayonara.mp3
-    - assets/.env
+    - .env
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

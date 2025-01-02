@@ -15,7 +15,7 @@ class AccountInformation extends StatelessWidget {
             Text("Full Name",
             style: TextStyle(fontSize: 36),
             ),
-            Container(
+            SizedBox(
               height: 75,
               child: Card(
                 child: Text("Someone Someoneyian",
@@ -31,7 +31,7 @@ class AccountInformation extends StatelessWidget {
             SizedBox(height: 10),
             Text("Registered Email",
             style: TextStyle(fontSize: 36)),
-            Container(
+            SizedBox(
               height: 75,
               child: Card(
                 child: Text("someone@gmail.com",
@@ -44,7 +44,7 @@ class AccountInformation extends StatelessWidget {
             SizedBox(height: 10),
             Text("Registered Device ID",
                 style: TextStyle(fontSize: 36)),
-            Container(
+            SizedBox(
                 height: 75,
                 child: Card(
                     child: Text("Registered Device ID",
@@ -57,7 +57,7 @@ class AccountInformation extends StatelessWidget {
             SizedBox(height: 10),
             Text("Date of Birth",
                 style: TextStyle(fontSize: 36)),
-            Container(
+            SizedBox(
                 height: 75,
                 child: Card(
                     child: Text("Birthda",

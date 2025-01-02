@@ -3,7 +3,6 @@ import 'package:vest1/accountInformation.dart';
 import 'package:vest1/deviceSettings.dart';
 import 'package:vest1/helpPage.dart';
 import 'package:vest1/main.dart';
-import 'package:vest1/myAccount.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
@@ -25,7 +24,7 @@ class _UserPageState extends State<UserPage> {
           padding: EdgeInsets.all(8),
           children: [
             Center(
-              child: Container(
+              child: SizedBox(
                 height: 100,
                 width: 100,
                 //decoration: BoxDecoration(

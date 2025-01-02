@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vest1/main.dart';
 
 class DeviceSettingsPage extends StatefulWidget {
-  const DeviceSettingsPage({Key? key}) : super(key: key);
+  const DeviceSettingsPage({super.key});
 
   @override
   _DeviceSettingsPageState createState() => _DeviceSettingsPageState();
@@ -173,13 +173,13 @@ class _DeviceSettingsPageState extends State<DeviceSettingsPage> {
         SizedBox(height: 40),
         ElevatedButton(
           onPressed: isLoading ? null : unpairDevice,
-          child: isLoading
-              ? CircularProgressIndicator(color: Colors.white)
-              : Text('Unpair Device'),
           style: ElevatedButton.styleFrom(
             backgroundColor: MyApp.secondaryColor,
             minimumSize: Size(double.infinity, 50),
           ),
+          child: isLoading
+              ? CircularProgressIndicator(color: Colors.white)
+              : Text('Unpair Device'),
         ),
       ],
     );
@@ -205,13 +205,13 @@ class _DeviceSettingsPageState extends State<DeviceSettingsPage> {
         SizedBox(height: 20),
         ElevatedButton(
           onPressed: isLoading ? null : pairDevice,
-          child: isLoading
-              ? CircularProgressIndicator(color: Colors.white)
-              : Text('Pair Device'),
           style: ElevatedButton.styleFrom(
             backgroundColor: MyApp.secondaryColor,
             minimumSize: Size(double.infinity, 50),
           ),
+          child: isLoading
+              ? CircularProgressIndicator(color: Colors.white)
+              : Text('Pair Device'),
         ),
       ],
     );

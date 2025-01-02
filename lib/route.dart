@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:vest1/audioHandler.dart';
 import 'package:vest1/components/SlidingAppbar.dart';
 import 'package:vest1/homePage.dart';
-import 'package:vest1/musicPage.dart';
+import 'package:vest1/musicPlayerPage.dart';
 import 'package:vest1/navigationPage.dart';
 import 'package:vest1/userPage.dart';
 
 // Import audio service and just_audio_background
-import 'package:audio_service/audio_service.dart';
-import 'package:just_audio_background/just_audio_background.dart';
-import 'audioHandler.dart';
 
 class RoutePage extends StatefulWidget {
   const RoutePage({super.key});
@@ -25,7 +21,7 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
   List<Widget> pages = [
     HomePage(),
     MapPage(),
-    //MusicPage(audioHandler: audioHandler),
+    MusicPlayerPage(),
     UserPage(),
   ];
 

@@ -5,7 +5,7 @@ class SlidingAppbar extends StatelessWidget implements PreferredSizeWidget {
   final AnimationController controller;
   final bool visible;
 
-  SlidingAppbar({
+  const SlidingAppbar({super.key, 
     required this.child,
     required this.controller,
     required this.visible,

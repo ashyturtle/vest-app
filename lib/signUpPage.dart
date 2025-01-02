@@ -3,6 +3,8 @@ import 'package:vest1/firebase/authentication.dart';
 import 'package:vest1/route.dart';
 
 class SignUp extends StatefulWidget {
+  const SignUp({super.key});
+
   @override
   _SignUpState createState() => _SignUpState();
 }

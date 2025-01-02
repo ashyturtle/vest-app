@@ -21,7 +21,7 @@ class HelpPage extends StatelessWidget {
             InkWell(
               borderRadius: BorderRadius.all(Radius.circular(10)),
               onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));},
-              child: Container(
+              child: SizedBox(
                 height: 100,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -41,7 +41,7 @@ class HelpPage extends StatelessWidget {
             InkWell(
               borderRadius: BorderRadius.all(Radius.circular(10)),
               onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => HelpPage()));},
-              child: Container(
+              child: SizedBox(
                 height: 100,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -62,7 +62,7 @@ class HelpPage extends StatelessWidget {
             InkWell(
               borderRadius: BorderRadius.all(Radius.circular(10)),
               onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => HelpPage()));},
-              child: Container(
+              child: SizedBox(
                   height: 100,
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -85,7 +85,7 @@ class HelpPage extends StatelessWidget {
               onTap: (){
                 Navigator.push(context, MaterialPageRoute(builder: (context) => ContactUs()));
                 },
-              child: Container(
+              child: SizedBox(
                   height: 100,
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
