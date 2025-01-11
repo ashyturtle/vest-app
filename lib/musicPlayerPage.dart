@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:nowplaying/nowplaying.dart';
 import 'package:nowplaying/nowplaying_track.dart';
 import 'package:provider/provider.dart';
+import 'package:vest1/main.dart';
 
 class MusicPlayerPage extends StatelessWidget {
   const MusicPlayerPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: NowPlayingTrackWidget());
+    return Scaffold(
+      body: Center(child: NowPlayingTrackWidget()),
+    );
   }
 }
 
@@ -42,39 +45,69 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
       value: NowPlaying.instance.stream,
       child: Consumer<NowPlayingTrack>(
         builder: (context, track, _) {
-          // if (track == NowPlayingTrack.loading) return Container();
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (track.isStopped) Text('nothing playing'),
-              if (!track.isStopped) ...[
-                if (track.title != null) Text(track.title!.trim()),
-                if (track.artist != null) Text(track.artist!.trim()),
-                if (track.album != null) Text(track.album!.trim()),
-                Text(track.duration.truncToSecond.toShortString()),
-                TrackProgressIndicator(track),
-                Text(track.state.toString()),
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.fromLTRB(8, 8, 8, 16),
-                      width: 200,
-                      height: 200,
-                      alignment: Alignment.center,
-                      color: Colors.grey,
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 350),
-                        child: _imageFrom(track),
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (track.isStopped) Text('Nothing playing', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                if (!track.isStopped) ...[
+                  if (track.title != null) Text(track.title!.trim(), style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  if (track.artist != null) Text(track.artist!.trim(), style: TextStyle(fontSize: 20, color: Colors.grey)),
+                  if (track.album != null) Text(track.album!.trim(), style: TextStyle(fontSize: 18, color: Colors.grey)),
+                  SizedBox(height: 10),
+                  Text(track.duration.truncToSecond.toShortString(), style: TextStyle(fontSize: 16)),
+                  TrackProgressIndicator(track),
+                  LinearProgressIndicator(
+                    value: track.progress.inSeconds / track.duration.inSeconds,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(MyApp.primaryColor),
+                  ),
+                  Text(track.state.toString(), style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  SizedBox(height: 20),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+                        width: 200,
+                        height: 200,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 350),
+                          child: _imageFrom(track),
+                        ),
                       ),
-                    ),
-                    Positioned(bottom: 0, right: 0, child: _iconFrom(track)),
-                    Positioned(
-                        bottom: 0, left: 8, child: Text(track.source!.trim())),
-                  ],
-                ),
-              ]
-            ],
+                      Positioned(bottom: 0, right: 0, child: _iconFrom(track)),
+                      Positioned(bottom: 0, left: 8, child: Text(track.source!.trim(), style: TextStyle(fontSize: 14, color: Colors.grey))),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.skip_previous),
+                        onPressed: () => {}
+                      ),
+                      IconButton(
+                        icon: Icon(track.state == NowPlayingState.playing ? Icons.pause : Icons.play_arrow),
+                        onPressed: () => track.state == NowPlayingState.playing
+                            ? NowPlaying.instance.stop()
+                            : NowPlaying.instance.start(),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.skip_next),
+                        onPressed: () => {},
+                      ),
+                    ],
+                  ),
+                ]
+              ],
+            ),
           );
         },
       ),
@@ -96,7 +129,7 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
         width: 50.0,
         height: 50.0,
         child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple)),
       );
     }
 
@@ -170,8 +203,8 @@ class _TrackProgressIndicatorState extends State<TrackProgressIndicator> {
         widget.track.duration - progress + const Duration(seconds: 1);
     return Column(
       children: [
-        Text(progress.toShortString()),
-        Text(countdown.toShortString()),
+        Text(progress.toShortString(), style: TextStyle(fontSize: 16)),
+        Text(countdown.toShortString(), style: TextStyle(fontSize: 16)),
       ],
     );
   }
