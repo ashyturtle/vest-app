@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -5,11 +6,63 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:vest1/components/repo.dart';
-
 import 'components/place_model.dart';
 
 Color color = const Color(0xfffe8903);
+
+/// Model representing an individual route step.
+class RouteStep {
+  final String instruction;
+  final double distance; // in meters
+  final double duration; // in seconds
+  final LatLng startLocation;
+
+  RouteStep({
+    required this.instruction,
+    required this.distance,
+    required this.duration,
+    required this.startLocation,
+  });
+}
+
+/// Model representing the OSRM route.
+class OSRMRoute {
+  final List<LatLng> polyline;
+  final double distance; // in meters
+  final double duration; // in seconds
+  final List<RouteStep> steps;
+
+  OSRMRoute({
+    required this.polyline,
+    required this.distance,
+    required this.duration,
+    required this.steps,
+  });
+}
+
+/// Helper function to generate a human-readable instruction from a step.
+String generateInstruction(Map<String, dynamic> step) {
+  final maneuver = step['maneuver'] as Map<String, dynamic>;
+  final String type = maneuver['type'];
+  final String modifier = maneuver['modifier'] ?? "";
+  final String roadName = (step['name'] as String?)?.trim() ?? "";
+  switch (type) {
+    case "depart":
+      return "Depart from your location";
+    case "arrive":
+      return "Arrive at your destination";
+    case "turn":
+      return "Turn $modifier onto ${roadName.isNotEmpty ? roadName : 'the road'}";
+    case "roundabout":
+      return "Enter roundabout and take the exit";
+    case "continue":
+      return "Continue straight";
+    default:
+      return "${type.toUpperCase()} ${modifier.isNotEmpty ? modifier : ''} ${roadName.isNotEmpty ? 'on $roadName' : ''}".trim();
+  }
+}
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -19,24 +72,57 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  BitmapDescriptor? currentLocation;
   TextEditingController placeController = TextEditingController();
 
-  late final GoogleMapController _controller;
+  late GoogleMapController _controller;
   Position? _currentPosition;
-  LatLng _currentLatLng = const LatLng(27.671332124757402, 85.3125417636781);
+  LatLng _currentLatLng =
+  const LatLng(27.671332124757402, 85.3125417636781);
+  String _currentAddress = "Fetching location...";
+
+  // Collections for markers and polylines.
+  Set<Marker> _markers = {};
+  Set<Polyline> _polylines = {};
+
+  // State variables for the trip.
+  bool _tripStarted = false;
+  bool _isLoadingRoute = false;
+  OSRMRoute? _currentRoute;
+  // Mutable list of remaining steps.
+  List<RouteStep> _remainingSteps = [];
+  // Distance threshold (in meters) to pop a step automatically.
+  final double _stepThreshold = 50;
 
   @override
   void initState() {
-    getLocation();
     super.initState();
+    getLocation();
+    // Listen to location updates.
+    Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5,
+        timeLimit: Duration(seconds: 2),
+      ),
+    ).listen((Position position) {
+      setState(() {
+        _currentPosition = position;
+        _currentLatLng = LatLng(position.latitude, position.longitude);
+        _markers.add(Marker(
+          markerId: const MarkerId("current"),
+          position: _currentLatLng,
+        ));
+      });
+      if (_tripStarted) {
+        _updateRemainingSteps();
+        _updateCamera();
+      }
+    });
   }
 
-  String _currentAddress = "Fetching location...";
-
+  // Get current location and reverse geocode its address.
   Future<void> getLocation() async {
     LocationPermission permission = await Geolocator.checkPermission();
-
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
@@ -46,7 +132,6 @@ class _MapPageState extends State<MapPage> {
         return;
       }
     }
-
     if (permission == LocationPermission.deniedForever) {
       setState(() {
         _currentAddress = "Permission Denied Forever";
@@ -57,17 +142,14 @@ class _MapPageState extends State<MapPage> {
     _currentPosition = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
-
     _currentLatLng =
         LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
 
-    // Fetch the address from coordinates
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
         _currentPosition!.latitude,
         _currentPosition!.longitude,
       );
-
       Placemark place = placemarks[0];
       _currentAddress =
       "${place.street}, ${place.locality}, ${place.administrativeArea}";
@@ -75,12 +157,141 @@ class _MapPageState extends State<MapPage> {
       _currentAddress = "Unable to fetch address";
     }
 
+    _markers.add(Marker(
+      markerId: const MarkerId("current"),
+      position: _currentLatLng,
+    ));
+
     setState(() {});
   }
 
+  // Fetch OSRM walking route (with steps) from origin to destination.
+  Future<OSRMRoute> fetchOSRMRoute(LatLng origin, LatLng destination) async {
+    final String baseUrl = 'http://router.project-osrm.org/route/v1/foot/';
+    final String coordinates =
+        '${origin.longitude},${origin.latitude};${destination.longitude},${destination.latitude}';
+    final String url =
+        '$baseUrl$coordinates?overview=full&geometries=geojson&steps=true';
+
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['routes'] != null && data['routes'].isNotEmpty) {
+        final route = data['routes'][0];
+        final geometry = route['geometry'];
+        final List<dynamic> coords = geometry['coordinates'];
+        List<LatLng> polyline = coords.map<LatLng>((point) {
+          return LatLng(point[1], point[0]);
+        }).toList();
+        double distance = route['distance'];
+        double duration = route['duration'];
+        List<RouteStep> routeSteps = [];
+        final legs = route['legs'] as List;
+        if (legs.isNotEmpty) {
+          final stepsData = legs[0]['steps'] as List;
+          for (var step in stepsData) {
+            final String instruction = generateInstruction(step);
+            final double stepDistance = (step['distance'] as num).toDouble();
+            final double stepDuration = (step['duration'] as num).toDouble();
+            final List<dynamic> loc = step['maneuver']['location'];
+            final LatLng startLocation = LatLng(loc[1], loc[0]);
+            routeSteps.add(RouteStep(
+                instruction: instruction,
+                distance: stepDistance,
+                duration: stepDuration,
+                startLocation: startLocation));
+          }
+        }
+        return OSRMRoute(
+            polyline: polyline,
+            distance: distance,
+            duration: duration,
+            steps: routeSteps);
+      } else {
+        throw Exception('No route found');
+      }
+    } else {
+      throw Exception('Failed to load route');
+    }
+  }
+
+  // Trigger route display when the user starts the trip.
+  Future<void> _startTrip() async {
+    if (placeController.text.isEmpty) return;
+    setState(() => _isLoadingRoute = true);
+    try {
+      List<Location> locations = await locationFromAddress(placeController.text);
+      if (locations.isNotEmpty) {
+        LatLng destinationLatLng =
+        LatLng(locations.first.latitude, locations.first.longitude);
+        OSRMRoute route = await fetchOSRMRoute(_currentLatLng, destinationLatLng);
+        setState(() {
+          _currentRoute = route;
+          _tripStarted = true;
+          // Create a mutable list of remaining steps.
+          _remainingSteps = List<RouteStep>.from(route.steps);
+          _polylines.clear();
+          _polylines.add(Polyline(
+            polylineId: const PolylineId('osrm_route'),
+            points: route.polyline,
+            color: Colors.blue,
+            width: 5,
+          ));
+          _markers.add(Marker(
+            markerId: const MarkerId('destination'),
+            position: destinationLatLng,
+          ));
+        });
+        _updateCamera();
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching route: $e")),
+      );
+    } finally {
+      setState(() => _isLoadingRoute = false);
+    }
+  }
+
+  // Check the distance between the user's current location and the next step.
+  // If the user is close enough, automatically remove that step.
+  void _updateRemainingSteps() {
+    if (_remainingSteps.isEmpty || _currentPosition == null) return;
+    final userLatLng =
+    LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
+    final currentStep = _remainingSteps.first;
+    final distanceToStep = Geolocator.distanceBetween(
+      userLatLng.latitude,
+      userLatLng.longitude,
+      currentStep.startLocation.latitude,
+      currentStep.startLocation.longitude,
+    );
+    if (distanceToStep < _stepThreshold) {
+      setState(() {
+        _remainingSteps.removeAt(0);
+      });
+    }
+  }
+
+  // Update camera to follow the user.
+  void _updateCamera() {
+    if (_currentPosition == null) return;
+    _controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: _currentLatLng,
+          zoom: 18,
+          tilt: 45,
+          bearing: _currentPosition!.heading,
+        ),
+      ),
+    );
+  }
+
+  // AutoComplete widget for destination input.
   Widget autoComplete() {
+    if (_tripStarted) return const SizedBox.shrink();
     return Container(
-      // height: 50,
       decoration: BoxDecoration(
           color: Colors.white,
           shape: BoxShape.rectangle,
@@ -93,49 +304,23 @@ class _MapPageState extends State<MapPage> {
           ],
           borderRadius: BorderRadius.circular(12)),
       child: TypeAheadField<Description?>(
-        onSelected: (suggestion) {
-          setState(() {
-            placeController.text =
-                suggestion?.structured_formatting?.main_text ?? "";
-          });
-        },
-        // : TextField(
-        //     style: GoogleFonts.lato(),
-        //     controller: placeController,
-        //     // style: GoogleFonts.poppins(),
-        //     decoration: InputDecoration(
-        //       isDense: false,
-        //       fillColor: Colors.transparent,
-        //       filled: false,
-        //       prefixIcon: Icon(CupertinoIcons.search, color: color),
-        //       suffixIcon: InkWell(
-        //           onTap: () {
-        //             setState(() {
-        //               placeController.clear();
-        //             });
-        //           },
-        //           child: const Icon(Icons.clear, color: Colors.red)),
-        //       // contentPadding:
-        //       //     const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-        //       hintText: "Where are you going?",
-        //       hintStyle: GoogleFonts.lato(),
-        //
-        //       border: InputBorder.none,
-        //       focusedBorder: InputBorder.none,
-        //       enabledBorder: InputBorder.none,
-        //       errorBorder: InputBorder.none,
-        //       disabledBorder: InputBorder.none,
-        //     )),
+          onSelected: (suggestion) async {
+            setState(() {
+              placeController.text =
+                  suggestion?.structured_formatting?.main_text ?? "";
+            });
+          },
           itemBuilder: (context, Description? itemData) {
             if (itemData == null || itemData.structured_formatting == null) {
               return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                margin:
+                const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                 child: const Text("No data available"),
               );
             }
-
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              margin:
+              const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -159,26 +344,11 @@ class _MapPageState extends State<MapPage> {
               ),
             );
           },
-
-          emptyBuilder: (context) {
-          return Container();
-          // return Wrap(
-          //   children: const [
-          //     Center(
-          //         heightFactor: 2,
-          //         child: Text(
-          //           "Location Not Found!!",
-          //           style: TextStyle(
-          //             fontSize: 12,
-          //           ),
-          //         )),
-          //   ],
-          // );
-        },
+          emptyBuilder: (context) => Container(),
           suggestionsCallback: (String pattern) async {
             try {
-              var predictionModel = await Repo.placeAutoComplete(placeInput: pattern);
-
+              var predictionModel =
+              await Repo.placeAutoComplete(placeInput: pattern);
               if (predictionModel != null) {
                 return predictionModel.predictions!.where((element) {
                   return element.description!
@@ -189,16 +359,16 @@ class _MapPageState extends State<MapPage> {
                 return [];
               }
             } catch (e) {
-              debugPrint("Error fetching predictions: $e");
+              print("Error fetching predictions: $e");
               return [];
             }
-          }
-
-      ),
+          }),
     );
   }
 
+  // Widget displaying current location and destination information.
   Widget locationsWidget() {
+    if (_tripStarted) return const SizedBox.shrink();
     return Container(
       margin: EdgeInsets.zero,
       width: double.infinity,
@@ -223,8 +393,7 @@ class _MapPageState extends State<MapPage> {
                 Container(
                   height: 15,
                   width: 15,
-                  decoration:
-                  BoxDecoration(color: color, shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
                 ),
                 const SizedBox(width: 8),
                 Wrap(
@@ -232,17 +401,11 @@ class _MapPageState extends State<MapPage> {
                   children: [
                     const Text(
                       "Current Location",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       _currentAddress,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -271,27 +434,119 @@ class _MapPageState extends State<MapPage> {
                   children: [
                     const Text(
                       "Destination",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(
                       width: 300,
                       child: Text(
-                        placeController.text.isEmpty
-                            ? "Select Destination"
-                            : placeController.text,
+                        placeController.text.isEmpty ? "Select Destination" : placeController.text,
                         overflow: TextOverflow.visible,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
-                        ),
+                        style: const TextStyle(fontSize: 16, color: Colors.grey),
                       ),
                     ),
                   ],
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // "Start Trip" button.
+  Widget startTripButton() {
+    if (_tripStarted) return const SizedBox.shrink();
+    return ElevatedButton(
+        style: ElevatedButton.styleFrom(
+            backgroundColor: color, minimumSize: const Size(double.infinity, 40)),
+        onPressed: _startTrip,
+        child: Text(
+          "Start Trip",
+          style: GoogleFonts.lato(fontSize: 18, color: Colors.white),
+        ));
+  }
+
+  // "End Trip" button.
+  Widget endTripButton() {
+    if (!_tripStarted) return const SizedBox.shrink();
+    return Positioned(
+      bottom: 20,
+      left: 20,
+      right: 20,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red,
+          minimumSize: const Size(double.infinity, 40),
+        ),
+        onPressed: () {
+          setState(() {
+            _tripStarted = false;
+            _currentRoute = null;
+            _remainingSteps.clear();
+            _polylines.clear();
+            _markers.removeWhere((m) => m.markerId.value == 'destination');
+            placeController.clear();
+          });
+        },
+        child: const Text("End Trip", style: TextStyle(color: Colors.white)),
+      ),
+    );
+  }
+
+  // Overlay widget showing the current instruction automatically.
+  Widget routeDirectionsOverlay() {
+    if (_currentRoute == null) return const SizedBox.shrink();
+    // If no remaining steps, show arrival message.
+    if (_remainingSteps.isEmpty) {
+      return Positioned(
+        top: 40,
+        left: 20,
+        right: 20,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Text(
+            "You have arrived at your destination.",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    // Display only the first (next) step.
+    final currentStep = _remainingSteps.first;
+    return Positioned(
+      top: 40,
+      left: 20,
+      right: 20,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.navigation, color: Colors.blue, size: 24),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                "Next: ${currentStep.instruction}",
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
             ),
           ],
         ),
@@ -308,17 +563,17 @@ class _MapPageState extends State<MapPage> {
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
         child: _currentPosition == null
-            ? const Center(child: CircularProgressIndicator()
-          //CircularProgressIndicator(),
-        )
+            ? const Center(child: CircularProgressIndicator())
             : Stack(
           children: [
             GoogleMap(
               myLocationButtonEnabled: false,
               myLocationEnabled: true,
               zoomControlsEnabled: false,
-              initialCameraPosition:
-              CameraPosition(zoom: 16, target: _currentLatLng),
+              initialCameraPosition: CameraPosition(
+                zoom: 16,
+                target: _currentLatLng,
+              ),
               onMapCreated: (controller) async {
                 setState(() {
                   _controller = controller;
@@ -327,53 +582,38 @@ class _MapPageState extends State<MapPage> {
                 var c = await rootBundle.loadString(val);
                 _controller.setMapStyle(c);
               },
-              markers: {
-                Marker(
-                  markerId: const MarkerId("1"),
-                  position: _currentLatLng,
-                ),
-              },
-
+              markers: _markers,
+              polylines: _polylines,
             ),
-            Container(
-              margin: const EdgeInsets.only(left: 20, right: 20, top: 40),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    autoComplete(),
-                    const SizedBox(
-                      height: 12,
-                    ),
-                    locationsWidget(),
-                    const Spacer(),
-                    confirmButton(),
-                  ],
+            if (!_tripStarted)
+              Container(
+                margin: const EdgeInsets.only(left: 20, right: 20, top: 40),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      autoComplete(),
+                      const SizedBox(height: 12),
+                      locationsWidget(),
+                    ],
+                  ),
                 ),
               ),
-            )
+            if (!_tripStarted)
+              Positioned(
+                bottom: 40,
+                left: 20,
+                right: 20,
+                child: startTripButton(),
+              ),
+            if (_tripStarted) routeDirectionsOverlay(),
+            if (_tripStarted) endTripButton(),
+            if (_isLoadingRoute)
+              const Center(child: CircularProgressIndicator()),
           ],
         ),
       ),
     );
-  }
-
-  Widget confirmButton() {
-    return ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: color,
-            minimumSize: const Size(double.infinity, 40)),
-        onPressed: () {
-          // _controller.animateCamera(CameraUpdate.newCameraPosition(
-          //     const CameraPosition(target: LatLng(0, 0))));
-        },
-        child: Text(
-          "CONFIRM",
-          style: GoogleFonts.lato(
-            fontSize: 18,
-            color: Colors.white,
-          ),
-        ));
   }
 }
