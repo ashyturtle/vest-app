@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vest1/components/repo.dart';
 import 'components/place_model.dart';
 
@@ -25,6 +26,20 @@ class RouteStep {
     required this.duration,
     required this.startLocation,
   });
+
+  Map<String, dynamic> toJson() => {
+    'instruction': instruction,
+    'distance': distance,
+    'duration': duration,
+    'startLocation': {'lat': startLocation.latitude, 'lng': startLocation.longitude},
+  };
+
+  factory RouteStep.fromJson(Map<String, dynamic> json) => RouteStep(
+    instruction: json['instruction'],
+    distance: json['distance'],
+    duration: json['duration'],
+    startLocation: LatLng(json['startLocation']['lat'], json['startLocation']['lng']),
+  );
 }
 
 /// Model representing the OSRM route.
@@ -40,6 +55,22 @@ class OSRMRoute {
     required this.duration,
     required this.steps,
   });
+
+  Map<String, dynamic> toJson() => {
+    'polyline': polyline.map((p) => {'lat': p.latitude, 'lng': p.longitude}).toList(),
+    'distance': distance,
+    'duration': duration,
+    'steps': steps.map((s) => s.toJson()).toList(),
+  };
+
+  factory OSRMRoute.fromJson(Map<String, dynamic> json) => OSRMRoute(
+    polyline: (json['polyline'] as List)
+        .map((p) => LatLng(p['lat'], p['lng']))
+        .toList(),
+    distance: json['distance'],
+    duration: json['duration'],
+    steps: (json['steps'] as List).map((s) => RouteStep.fromJson(s)).toList(),
+  );
 }
 
 /// Helper function to generate a human-readable instruction from a step.
@@ -50,15 +81,15 @@ String generateInstruction(Map<String, dynamic> step) {
   final String roadName = (step['name'] as String?)?.trim() ?? "";
   switch (type) {
     case "depart":
-      return "Depart from your location";
+      return "Start walking from your location";
     case "arrive":
       return "Arrive at your destination";
     case "turn":
-      return "Turn $modifier onto ${roadName.isNotEmpty ? roadName : 'the road'}";
+      return "Turn $modifier onto ${roadName.isNotEmpty ? roadName : 'the path'}";
     case "roundabout":
       return "Enter roundabout and take the exit";
     case "continue":
-      return "Continue straight";
+      return "Continue walking straight";
     default:
       return "${type.toUpperCase()} ${modifier.isNotEmpty ? modifier : ''} ${roadName.isNotEmpty ? 'on $roadName' : ''}".trim();
   }
@@ -76,8 +107,7 @@ class _MapPageState extends State<MapPage> {
 
   late GoogleMapController _controller;
   Position? _currentPosition;
-  LatLng _currentLatLng =
-  const LatLng(27.671332124757402, 85.3125417636781);
+  LatLng _currentLatLng = const LatLng(37.4220, -122.0841); // Google Building 43
   String _currentAddress = "Fetching location...";
 
   // Collections for markers and polylines.
@@ -88,16 +118,18 @@ class _MapPageState extends State<MapPage> {
   bool _tripStarted = false;
   bool _isLoadingRoute = false;
   OSRMRoute? _currentRoute;
-  // Mutable list of remaining steps.
   List<RouteStep> _remainingSteps = [];
-  // Distance threshold (in meters) to pop a step automatically.
-  final double _stepThreshold = 50;
+  final double _stepThreshold = 50; // Distance to pop a step (meters)
+  final double _vibrationThreshold = 20; // Distance to trigger vibration (meters)
+
+  // Average walking speed: 1.4 m/s (5 km/h)
+  static const double _walkingSpeed = 1.4;
 
   @override
   void initState() {
     super.initState();
+    _loadTripState(); // Load saved state on init
     getLocation();
-    // Listen to location updates.
     Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
@@ -116,8 +148,58 @@ class _MapPageState extends State<MapPage> {
       if (_tripStarted) {
         _updateRemainingSteps();
         _updateCamera();
+        _saveTripState(); // Save state on location update
       }
     });
+  }
+
+  // Load trip state from SharedPreferences.
+  Future<void> _loadTripState() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _tripStarted = prefs.getBool('tripStarted') ?? false;
+      placeController.text = prefs.getString('destination') ?? '';
+      final routeJson = prefs.getString('currentRoute');
+      final stepsJson = prefs.getString('remainingSteps');
+      if (routeJson != null) {
+        _currentRoute = OSRMRoute.fromJson(json.decode(routeJson));
+        _polylines.add(Polyline(
+          polylineId: const PolylineId('osrm_route'),
+          points: _currentRoute!.polyline,
+          color: Colors.blue,
+          width: 5,
+        ));
+        _markers.add(Marker(
+          markerId: const MarkerId('destination'),
+          position: _currentRoute!.polyline.last,
+        ));
+      }
+      if (stepsJson != null) {
+        _remainingSteps = (json.decode(stepsJson) as List)
+            .map((s) => RouteStep.fromJson(s))
+            .toList();
+      }
+    });
+  }
+
+  // Save trip state to SharedPreferences.
+  Future<void> _saveTripState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('tripStarted', _tripStarted);
+    await prefs.setString('destination', placeController.text);
+    if (_currentRoute != null) {
+      await prefs.setString('currentRoute', json.encode(_currentRoute!.toJson()));
+    }
+    if (_remainingSteps.isNotEmpty) {
+      await prefs.setString(
+          'remainingSteps', json.encode(_remainingSteps.map((s) => s.toJson()).toList()));
+    }
+  }
+
+  // Clear saved trip state.
+  Future<void> _clearTripState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
   }
 
   // Get current location and reverse geocode its address.
@@ -142,8 +224,7 @@ class _MapPageState extends State<MapPage> {
     _currentPosition = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
-    _currentLatLng =
-        LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
+    _currentLatLng = LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
 
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
@@ -165,9 +246,9 @@ class _MapPageState extends State<MapPage> {
     setState(() {});
   }
 
-  // Fetch OSRM walking route (with steps) from origin to destination.
+  // Fetch OSRM walking route and enforce walking-specific logic.
   Future<OSRMRoute> fetchOSRMRoute(LatLng origin, LatLng destination) async {
-    final String baseUrl = 'http://router.project-osrm.org/route/v1/foot/';
+    const String baseUrl = 'http://router.project-osrm.org/route/v1/foot/';
     final String coordinates =
         '${origin.longitude},${origin.latitude};${destination.longitude},${destination.latitude}';
     final String url =
@@ -176,6 +257,7 @@ class _MapPageState extends State<MapPage> {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+      print("OSRM Raw Response: $data");
       if (data['routes'] != null && data['routes'].isNotEmpty) {
         final route = data['routes'][0];
         final geometry = route['geometry'];
@@ -184,7 +266,17 @@ class _MapPageState extends State<MapPage> {
           return LatLng(point[1], point[0]);
         }).toList();
         double distance = route['distance'];
-        double duration = route['duration'];
+        double serverDuration = route['duration'];
+        double walkingDuration = distance / _walkingSpeed;
+
+        print("Server Distance: $distance m, Server Duration: $serverDuration s");
+        print("Walking Duration (calculated): $walkingDuration s (~${(walkingDuration / 3600).toStringAsFixed(1)} hours)");
+
+        if (serverDuration < walkingDuration * 0.5) {
+          print("Server duration too short, forcing walking duration: $walkingDuration s");
+          serverDuration = walkingDuration;
+        }
+
         List<RouteStep> routeSteps = [];
         final legs = route['legs'] as List;
         if (legs.isNotEmpty) {
@@ -192,26 +284,31 @@ class _MapPageState extends State<MapPage> {
           for (var step in stepsData) {
             final String instruction = generateInstruction(step);
             final double stepDistance = (step['distance'] as num).toDouble();
-            final double stepDuration = (step['duration'] as num).toDouble();
+            final double stepWalkingDuration = stepDistance / _walkingSpeed;
             final List<dynamic> loc = step['maneuver']['location'];
             final LatLng startLocation = LatLng(loc[1], loc[0]);
             routeSteps.add(RouteStep(
-                instruction: instruction,
-                distance: stepDistance,
-                duration: stepDuration,
-                startLocation: startLocation));
+              instruction: instruction,
+              distance: stepDistance,
+              duration: stepWalkingDuration,
+              startLocation: startLocation,
+            ));
           }
         }
+
+        double totalDuration = routeSteps.fold(0, (sum, step) => sum + step.duration);
+
         return OSRMRoute(
-            polyline: polyline,
-            distance: distance,
-            duration: duration,
-            steps: routeSteps);
+          polyline: polyline,
+          distance: distance,
+          duration: totalDuration,
+          steps: routeSteps,
+        );
       } else {
         throw Exception('No route found');
       }
     } else {
-      throw Exception('Failed to load route');
+      throw Exception('Failed to load route: ${response.statusCode}');
     }
   }
 
@@ -228,7 +325,6 @@ class _MapPageState extends State<MapPage> {
         setState(() {
           _currentRoute = route;
           _tripStarted = true;
-          // Create a mutable list of remaining steps.
           _remainingSteps = List<RouteStep>.from(route.steps);
           _polylines.clear();
           _polylines.add(Polyline(
@@ -243,6 +339,7 @@ class _MapPageState extends State<MapPage> {
           ));
         });
         _updateCamera();
+        _saveTripState(); // Save initial state
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -253,12 +350,10 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  // Check the distance between the user's current location and the next step.
-  // If the user is close enough, automatically remove that step.
+  // Update remaining steps and trigger vibration based on proximity.
   void _updateRemainingSteps() {
     if (_remainingSteps.isEmpty || _currentPosition == null) return;
-    final userLatLng =
-    LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
+    final userLatLng = LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
     final currentStep = _remainingSteps.first;
     final distanceToStep = Geolocator.distanceBetween(
       userLatLng.latitude,
@@ -266,11 +361,38 @@ class _MapPageState extends State<MapPage> {
       currentStep.startLocation.latitude,
       currentStep.startLocation.longitude,
     );
+    print("Distance to next step: $distanceToStep meters");
+
     if (distanceToStep < _stepThreshold) {
       setState(() {
         _remainingSteps.removeAt(0);
+        print("Step completed: ${currentStep.instruction}");
       });
     }
+
+    if (_remainingSteps.isNotEmpty) {
+      final nextStep = _remainingSteps.first;
+      final distanceToNext = Geolocator.distanceBetween(
+        userLatLng.latitude,
+        userLatLng.longitude,
+        nextStep.startLocation.latitude,
+        nextStep.startLocation.longitude,
+      );
+      if (distanceToNext < _vibrationThreshold) {
+        _triggerVibration(nextStep.instruction);
+      }
+    }
+  }
+
+  // Simulate vibration on ESP (left or right shoulder) based on instruction.
+  void _triggerVibration(String instruction) async {
+      if (instruction.toLowerCase().contains("left")) {
+        //Vibration.vibrate(pattern: [0, 200, 100, 200]);
+        print("Vibrate LEFT shoulder");
+      } else if (instruction.toLowerCase().contains("right")) {
+       // Vibration.vibrate(pattern: [0, 500, 100, 500]);
+        print("Vibrate RIGHT shoulder");
+      }
   }
 
   // Update camera to follow the user.
@@ -306,21 +428,18 @@ class _MapPageState extends State<MapPage> {
       child: TypeAheadField<Description?>(
           onSelected: (suggestion) async {
             setState(() {
-              placeController.text =
-                  suggestion?.structured_formatting?.main_text ?? "";
+              placeController.text = suggestion?.structured_formatting?.main_text ?? "";
             });
           },
           itemBuilder: (context, Description? itemData) {
             if (itemData == null || itemData.structured_formatting == null) {
               return Container(
-                margin:
-                const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                 child: const Text("No data available"),
               );
             }
             return Container(
-              margin:
-              const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -347,13 +466,10 @@ class _MapPageState extends State<MapPage> {
           emptyBuilder: (context) => Container(),
           suggestionsCallback: (String pattern) async {
             try {
-              var predictionModel =
-              await Repo.placeAutoComplete(placeInput: pattern);
+              var predictionModel = await Repo.placeAutoComplete(placeInput: pattern);
               if (predictionModel != null) {
                 return predictionModel.predictions!.where((element) {
-                  return element.description!
-                      .toLowerCase()
-                      .contains(pattern.toLowerCase());
+                  return element.description!.toLowerCase().contains(pattern.toLowerCase());
                 }).toList();
               } else {
                 return [];
@@ -462,12 +578,12 @@ class _MapPageState extends State<MapPage> {
             backgroundColor: color, minimumSize: const Size(double.infinity, 40)),
         onPressed: _startTrip,
         child: Text(
-          "Start Trip",
+          "Start Walking",
           style: GoogleFonts.lato(fontSize: 18, color: Colors.white),
         ));
   }
 
-  // "End Trip" button.
+  // "End Trip" button with state clearing.
   Widget endTripButton() {
     if (!_tripStarted) return const SizedBox.shrink();
     return Positioned(
@@ -488,16 +604,27 @@ class _MapPageState extends State<MapPage> {
             _markers.removeWhere((m) => m.markerId.value == 'destination');
             placeController.clear();
           });
+          _clearTripState(); // Clear saved state
         },
         child: const Text("End Trip", style: TextStyle(color: Colors.white)),
       ),
     );
   }
 
-  // Overlay widget showing the current instruction automatically.
+  // Format duration as "X hours Y minutes".
+  String _formatDuration(double durationInSeconds) {
+    int hours = (durationInSeconds / 3600).floor();
+    int minutes = ((durationInSeconds % 3600) / 60).round();
+    if (hours > 0) {
+      return "$hours hour${hours > 1 ? 's' : ''} $minutes minute${minutes != 1 ? 's' : ''}";
+    } else {
+      return "$minutes minute${minutes != 1 ? 's' : ''}";
+    }
+  }
+
+  // Overlay widget showing the current instruction with hours and minutes.
   Widget routeDirectionsOverlay() {
     if (_currentRoute == null) return const SizedBox.shrink();
-    // If no remaining steps, show arrival message.
     if (_remainingSteps.isEmpty) {
       return Positioned(
         top: 40,
@@ -518,8 +645,10 @@ class _MapPageState extends State<MapPage> {
       );
     }
 
-    // Display only the first (next) step.
     final currentStep = _remainingSteps.first;
+    final distanceKm = (_currentRoute!.distance / 1000).toStringAsFixed(1);
+    final durationFormatted = _formatDuration(_currentRoute!.duration);
+
     return Positioned(
       top: 40,
       left: 20,
@@ -537,16 +666,27 @@ class _MapPageState extends State<MapPage> {
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.navigation, color: Colors.blue, size: 24),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                "Next: ${currentStep.instruction}",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
+            Text(
+              "Walking: $distanceKm km, ~$durationFormatted",
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.directions_walk, color: Colors.blue, size: 24),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    "Next: ${currentStep.instruction}",
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
