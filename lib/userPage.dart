@@ -1,180 +1,146 @@
 import 'package:flutter/material.dart';
 import 'package:vest1/accountInformation.dart';
 import 'package:vest1/deviceSettings.dart';
-import 'package:vest1/helpPage.dart';
-import 'package:vest1/main.dart';
+import 'package:vest1/firebase/authentication.dart';
+import 'package:vest1/loginPage.dart';
 
-class UserPage extends StatefulWidget {
-  const UserPage({super.key});
-
-  @override
-  State<UserPage> createState() => _UserPageState();
-}
-
-class _UserPageState extends State<UserPage> {
-  String name = "Jack";
-  String account = "ashyjacklin@gmail.com";
-  String firstInitial = 'J';
+class UserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: MyApp.surfaceColor,
-      child: ListView(
-          scrollDirection: Axis.vertical,
-          padding: EdgeInsets.all(8),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildCard(
+            context,
+            icon: Icons.info,
+            text: 'User Information',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AccountInformation(userId: AuthenticationHelper().uid)),
+              );
+            },
+          ),
+          const Divider(),
+          _buildCard(
+            context,
+            icon: Icons.settings,
+            text: 'Device Settings',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => DeviceSettingsPage()),
+              );
+            },
+          ),
+          const Divider(),
+          _buildCard(
+            context,
+            icon: Icons.logout,
+            text: 'Sign Out',
+            onTap: () {
+              _showConfirmationDialog(
+                context,
+                title: 'Sign Out',
+                content: 'Are you sure you want to sign out?',
+                onConfirm: () async {
+                  await AuthenticationHelper().signOut();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()), // Replace with your login screen
+                        (route) => false,
+                  );                  },
+              );
+            },
+          ),
+          const Divider(),
+          _buildCard(
+            context,
+            icon: Icons.delete,
+            text: 'Delete Account',
+            onTap: () {
+              _showDeleteAccountDialog(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, {required IconData icon, required String text, required VoidCallback onTap}) {
+    return Card(
+      child: ListTile(
+        leading: Icon(icon),
+        title: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 18),
+          ),
+        ),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  void _showConfirmationDialog(BuildContext context, {required String title, required String content, required VoidCallback onConfirm}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: onConfirm,
+            child: Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    final TextEditingController emailController = TextEditingController();
+    final TextEditingController passwordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Account'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Center(
-              child: SizedBox(
-                height: 100,
-                width: 100,
-                //decoration: BoxDecoration(
-                //shape: BoxShape.circle),
-                child: Card(
-                    elevation: 10,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50)),
-                    margin: EdgeInsets.all(0),
-                    child: Center(
-                      child: Text(firstInitial,
-                          style: TextStyle(
-                            fontSize: 50,
-                          )),
-                    )),
-              ),
+            const Text('Type in your password to confirm the delete.'),
+            TextField(
+              controller: passwordController,
+              decoration: InputDecoration(labelText: 'Password'),
+              obscureText: true,
             ),
-            SizedBox(
-              height: 10,
-            ),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Container(
-                  child: Text(account,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w100,
-                      ))),
-            ]),
-            SizedBox(
-              height: 5,
-            ),
-            Container(
-              height: 2,
-              color: MyApp.surfaceColor,
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => AccountInformation()));
-              },
-              child: Container(
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.info_outline_rounded),
-                            SizedBox(width: 8,),
-                            Text(
-                              "Account information",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w200,
-                                fontSize: 25,
-                              ),
-                            ),
-                          ],
-                        ),
-                    Icon(Icons.chevron_right)
-                  ])),
-            ),
-            SizedBox(height:16),
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => HelpPage()));
-              },
-              child: Container(
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.lightbulb_outline),
-                            SizedBox(width: 8,),
-                            Text(
-                              "Help",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w200,
-                                fontSize: 25,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Icon(Icons.chevron_right)
-                      ])),
-            ),
-            SizedBox(height:16),
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => AccountInformation()));
-              },
-              child: Container(
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.settings_outlined),
-                            SizedBox(width: 8,),
-                            Text(
-                              "Settings",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w200,
-                                fontSize: 25,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Icon(Icons.chevron_right)
-                      ])),
-            ),
-            SizedBox(height: 16,),
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => DeviceSettingsPage()));
-              },
-              child: Container(
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.settings_bluetooth),
-                            SizedBox(width: 8,),
-                            Text(
-                              "Pair your Device",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w200,
-                                fontSize: 25,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Icon(Icons.chevron_right)
-                      ])),
-            ),
-          ]),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await AuthenticationHelper().deleteAccount(passwordController.text);
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()), // Replace with your login screen
+                    (route) => false,
+              );            },
+            child: Text('Delete'),
+          ),
+        ],
+      ),
     );
   }
 }

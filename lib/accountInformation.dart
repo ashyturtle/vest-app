@@ -1,73 +1,94 @@
 import 'package:flutter/material.dart';
-class AccountInformation extends StatelessWidget {
-  const AccountInformation({super.key});
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class AccountInformation extends StatefulWidget {
+  final String userId;
+
+  const AccountInformation({Key? key, required this.userId}) : super(key: key);
+
+  @override
+  _AccountInformationState createState() => _AccountInformationState();
+}
+
+class _AccountInformationState extends State<AccountInformation> {
+  Map<String, dynamic>? userData;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+
+  Future<void> fetchUserData() async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userId)
+          .get();
+
+      setState(() {
+        userData = userDoc.data() as Map<String, dynamic>?;
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error fetching user data: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title:Text("Account information")),
-      body: Padding(
-        padding: EdgeInsets.all(8),
+      appBar: AppBar(
+        title: Text('User Info'),
+      ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : userData == null
+          ? Center(child: Text('No user data available'))
+          : Padding(
+        padding: const EdgeInsets.all(20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Full Name",
-            style: TextStyle(fontSize: 36),
+            Text(
+              "Full name",
+              style: TextStyle(fontSize: 24),
             ),
-            SizedBox(
-              height: 75,
+            Container(
+              padding: EdgeInsets.all(8),
+              width: double.infinity,
+              height: 100,
               child: Card(
-                child: Text("Someone Someoneyian",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    height: 3,
-                      color: Colors.white,
-                      fontSize: 24
-                  ),
-                ),
-              ),
+                  elevation: 1,
+                  child: Center(
+                      child: Text(
+                        "${userData!['firstName'].toString() + " " + userData!['lastName'].toString()}",
+                        style: TextStyle(fontSize: 18),
+                      ))),
             ),
-            SizedBox(height: 10),
-            Text("Registered Email",
-            style: TextStyle(fontSize: 36)),
-            SizedBox(
-              height: 75,
+            Text(
+              "Email",
+              style: TextStyle(fontSize: 24),
+            ),
+            Container(
+              padding: EdgeInsets.all(8),
+              width: double.infinity,
+              height: 100,
               child: Card(
-                child: Text("someone@gmail.com",
-                style: TextStyle(fontSize: 24,
-                height:3,
-                color: Colors.white),
-                textAlign: TextAlign.center)
-              )
+                  elevation: 1,
+                  child: Center(
+                      child: Text(
+                        "${userData!['email'].toString()}",
+                        style: TextStyle(fontSize: 18),
+                      ))),
             ),
-            SizedBox(height: 10),
-            Text("Registered Device ID",
-                style: TextStyle(fontSize: 36)),
             SizedBox(
-                height: 75,
-                child: Card(
-                    child: Text("Registered Device ID",
-                        style: TextStyle(fontSize: 24,
-                            height:3,
-                            color: Colors.white),
-                        textAlign: TextAlign.center)
-                )
+              height: 100,
             ),
-            SizedBox(height: 10),
-            Text("Date of Birth",
-                style: TextStyle(fontSize: 36)),
-            SizedBox(
-                height: 75,
-                child: Card(
-                    child: Text("Birthda",
-                        style: TextStyle(fontSize: 24,
-                            height:3,
-                            color: Colors.white),
-                        textAlign: TextAlign.center)
-                )
-            ),
-
           ],
         ),
       ),

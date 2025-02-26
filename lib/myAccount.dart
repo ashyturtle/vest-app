@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vest1/accountInformation.dart';
+import 'package:vest1/firebase/authentication.dart';
 
 import 'main.dart';
 
@@ -65,7 +66,7 @@ class MyAccount extends StatelessWidget {
               InkWell(
                 onTap: () {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => AccountInformation()));
+                      MaterialPageRoute(builder: (context) => AccountInformation(userId: AuthenticationHelper().uid,)));
                 },
                 child: Container(
                     child: Row(
