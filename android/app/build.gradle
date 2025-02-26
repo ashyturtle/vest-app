@@ -44,6 +44,7 @@ android {
     }
 
     defaultConfig {
+       manifestPlaceholders = [redirectSchemeName: "spotify-sdk", redirectHostName: "auth"]
         applicationId = "com.codingmind.pulsepath"
         minSdk = 23
         targetSdk = 29

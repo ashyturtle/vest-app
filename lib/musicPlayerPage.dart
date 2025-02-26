@@ -1,9 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:nowplaying/nowplaying.dart';
 import 'package:nowplaying/nowplaying_track.dart';
 import 'package:provider/provider.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:vest1/main.dart';
 
 class MusicPlayerPage extends StatelessWidget {
@@ -23,19 +23,34 @@ class NowPlayingTrackWidget extends StatefulWidget {
 }
 
 class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
+  late AudioHandler _audioHandler;
+
   @override
   void initState() {
     super.initState();
-    NowPlaying.instance.isEnabled().then((isEnabled) async {
-      if (!isEnabled) {
-        final shown = await NowPlaying.instance.requestPermissions();
-        print('MANAGED TO SHOW PERMS PAGE: $shown');
-      }
+    _initAudioService();
+    _checkPermissions();
+  }
 
-      if (NowPlaying.spotify.isEnabled && NowPlaying.spotify.isUnconnected) {
-        NowPlaying.spotify.signIn(context);
-      }
-    });
+  // Initialize Audio Service
+  Future<void> _initAudioService() async {
+    _audioHandler = await AudioService.init(
+      builder: () => SystemMediaControlHandler(),
+      config: AudioServiceConfig(
+        androidNotificationChannelId: 'com.codingmind.pulsepath.channel.audio',
+        androidNotificationChannelName: 'PulsePath Audio',
+        androidNotificationOngoing: true,
+      ),
+    );
+  }
+
+  // Check permissions for NowPlaying
+  Future<void> _checkPermissions() async {
+    bool isEnabled = await NowPlaying.instance.isEnabled();
+    if (!isEnabled) {
+      final shown = await NowPlaying.instance.requestPermissions();
+      print('MANAGED TO SHOW PERMS PAGE: $shown');
+    }
   }
 
   @override
@@ -50,20 +65,30 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (track.isStopped) Text('Nothing playing', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                if (track.isStopped)
+                  Text('Nothing playing',
+                      style: TextStyle(fontSize: 18, color: Colors.grey)),
                 if (!track.isStopped) ...[
-                  if (track.title != null) Text(track.title!.trim(), style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                  if (track.artist != null) Text(track.artist!.trim(), style: TextStyle(fontSize: 20, color: Colors.grey)),
-                  if (track.album != null) Text(track.album!.trim(), style: TextStyle(fontSize: 18, color: Colors.grey)),
+                  if (track.title != null)
+                    Text(track.title!.trim(),
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  if (track.artist != null)
+                    Text(track.artist!.trim(),
+                        style: TextStyle(fontSize: 20, color: Colors.grey)),
+                  if (track.album != null)
+                    Text(track.album!.trim(),
+                        style: TextStyle(fontSize: 18, color: Colors.grey)),
                   SizedBox(height: 10),
-                  Text(track.duration.truncToSecond.toShortString(), style: TextStyle(fontSize: 16)),
+                  Text(track.duration.truncToSecond.toShortString(),
+                      style: TextStyle(fontSize: 16)),
                   TrackProgressIndicator(track),
                   LinearProgressIndicator(
                     value: track.progress.inSeconds / track.duration.inSeconds,
                     backgroundColor: Colors.grey[300],
                     valueColor: AlwaysStoppedAnimation<Color>(MyApp.primaryColor),
                   ),
-                  Text(track.state.toString(), style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  Text(track.state.toString(),
+                      style: TextStyle(fontSize: 16, color: Colors.grey)),
                   SizedBox(height: 20),
                   Stack(
                     alignment: Alignment.center,
@@ -82,8 +107,12 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
                           child: _imageFrom(track),
                         ),
                       ),
-                      Positioned(bottom: 0, right: 0, child: _iconFrom(track)),
-                      Positioned(bottom: 0, left: 8, child: Text(track.source!.trim(), style: TextStyle(fontSize: 14, color: Colors.grey))),
+                      Positioned(top: 0, right: 0, child: _iconFrom(track)),
+                      Positioned(
+                          top: 0,
+                          left: 8,
+                          child: Text(track.source!.trim(),
+                              style: TextStyle(fontSize: 14, color: Colors.grey))),
                     ],
                   ),
                   Row(
@@ -91,21 +120,43 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
                     children: [
                       IconButton(
                         icon: Icon(Icons.skip_previous),
-                        onPressed: () => {}
+                        onPressed: () async {
+                          try {
+                            await _audioHandler.skipToPrevious();
+                          } catch (e) {
+                            print("Previous failed: $e");
+                          }
+                        },
                       ),
                       IconButton(
-                        icon: Icon(track.state == NowPlayingState.playing ? Icons.pause : Icons.play_arrow),
-                        onPressed: () => track.state == NowPlayingState.playing
-                            ? NowPlaying.instance.stop()
-                            : NowPlaying.instance.start(),
+                        icon: Icon(track.state == NowPlayingState.playing
+                            ? Icons.pause
+                            : Icons.play_arrow),
+                        onPressed: () async {
+                          try {
+                            if (track.state == NowPlayingState.playing) {
+                              await _audioHandler.pause();
+                            } else {
+                              await _audioHandler.play();
+                            }
+                          } catch (e) {
+                            print("Play/pause failed: $e");
+                          }
+                        },
                       ),
                       IconButton(
                         icon: Icon(Icons.skip_next),
-                        onPressed: () => {},
+                        onPressed: () async {
+                          try {
+                            await _audioHandler.skipToNext();
+                          } catch (e) {
+                            print("Next failed: $e");
+                          }
+                        },
                       ),
                     ],
                   ),
-                ]
+                ],
               ],
             ),
           );
@@ -144,7 +195,7 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
         padding: const EdgeInsets.all(6),
         decoration: const BoxDecoration(
             color: Colors.white,
-            boxShadow: [const BoxShadow(blurRadius: 5, color: Colors.black)],
+            boxShadow: [BoxShadow(blurRadius: 5, color: Colors.black)],
             shape: BoxShape.circle),
         child: Image(
           image: track.icon!,
@@ -169,6 +220,46 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
       default:
         return Colors.purpleAccent;
     }
+  }
+}
+
+// Audio handler for system media control
+class SystemMediaControlHandler extends BaseAudioHandler {
+  @override
+  Future<void> play() async {
+    playbackState.add(playbackState.value.copyWith(
+      controls: [MediaControl.pause, MediaControl.skipToNext, MediaControl.skipToPrevious],
+      playing: true,
+    ));
+    await platformInvoke('play');
+  }
+
+  @override
+  Future<void> pause() async {
+    playbackState.add(playbackState.value.copyWith(
+      controls: [MediaControl.play, MediaControl.skipToNext, MediaControl.skipToPrevious],
+      playing: false,
+    ));
+    await platformInvoke('pause');
+  }
+
+  @override
+  Future<void> skipToNext() async {
+    await platformInvoke('next');
+  }
+
+  @override
+  Future<void> skipToPrevious() async {
+    await platformInvoke('previous');
+  }
+
+  // Platform-specific invocation (simplified; actual implementation may vary)
+  Future<void> platformInvoke(String action) async {
+    // try {
+    //   await AudioService.(action);
+    // } catch (e) {
+    //   print("System media action $action failed: $e");
+    // }
   }
 }
 
