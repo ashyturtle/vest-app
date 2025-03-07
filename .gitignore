@@ -45,4 +45,5 @@ app.*.map.json
 /android/app/src/main/res/values
 
 /lib/components/appString.dart
+/ios/Runner/AppDelegate.swift
 .env

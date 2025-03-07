@@ -265,8 +265,10 @@ class _MapPageState extends State<MapPage> {
         List<LatLng> polyline = coords.map<LatLng>((point) {
           return LatLng(point[1], point[0]);
         }).toList();
-        double distance = route['distance'];
-        double serverDuration = route['duration'];
+
+        // Explicitly cast num to double
+        double distance = (route['distance'] as num).toDouble();
+        double serverDuration = (route['duration'] as num).toDouble();
         double walkingDuration = distance / _walkingSpeed;
 
         print("Server Distance: $distance m, Server Duration: $serverDuration s");
@@ -283,7 +285,7 @@ class _MapPageState extends State<MapPage> {
           final stepsData = legs[0]['steps'] as List;
           for (var step in stepsData) {
             final String instruction = generateInstruction(step);
-            final double stepDistance = (step['distance'] as num).toDouble();
+            final double stepDistance = (step['distance'] as num).toDouble(); // Also cast here
             final double stepWalkingDuration = stepDistance / _walkingSpeed;
             final List<dynamic> loc = step['maneuver']['location'];
             final LatLng startLocation = LatLng(loc[1], loc[0]);
@@ -311,7 +313,6 @@ class _MapPageState extends State<MapPage> {
       throw Exception('Failed to load route: ${response.statusCode}');
     }
   }
-
   // Trigger route display when the user starts the trip.
   Future<void> _startTrip() async {
     if (placeController.text.isEmpty) return;
