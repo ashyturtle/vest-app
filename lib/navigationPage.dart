@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vest1/bleManager.dart';
 import 'package:vest1/components/repo.dart';
 import 'components/place_model.dart';
 
@@ -120,8 +121,7 @@ class _MapPageState extends State<MapPage> {
   OSRMRoute? _currentRoute;
   List<RouteStep> _remainingSteps = [];
   final double _stepThreshold = 50; // Distance to pop a step (meters)
-  final double _vibrationThreshold = 20; // Distance to trigger vibration (meters)
-
+  final bleManager = BleManager();
   // Average walking speed: 1.4 m/s (5 km/h)
   static const double _walkingSpeed = 1.4;
 
@@ -130,6 +130,7 @@ class _MapPageState extends State<MapPage> {
     super.initState();
     _loadTripState(); // Load saved state on init
     getLocation();
+    _ensureBleConnected();
     Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
@@ -151,6 +152,11 @@ class _MapPageState extends State<MapPage> {
         _saveTripState(); // Save state on location update
       }
     });
+  }
+  Future<void> _ensureBleConnected() async {
+    if(!bleManager.isConnected){
+      await bleManager.connect();
+    }
   }
 
   // Load trip state from SharedPreferences.
@@ -379,23 +385,19 @@ class _MapPageState extends State<MapPage> {
         nextStep.startLocation.latitude,
         nextStep.startLocation.longitude,
       );
-      if (distanceToNext < _vibrationThreshold) {
-        _triggerVibration(nextStep.instruction);
-      }
     }
   }
 
-  // Simulate vibration on ESP (left or right shoulder) based on instruction.
   void _triggerVibration(String instruction) async {
-      if (instruction.toLowerCase().contains("left")) {
-        //Vibration.vibrate(pattern: [0, 200, 100, 200]);
-        print("Vibrate LEFT shoulder");
-      } else if (instruction.toLowerCase().contains("right")) {
-       // Vibration.vibrate(pattern: [0, 500, 100, 500]);
-        print("Vibrate RIGHT shoulder");
-      }
+    await _ensureBleConnected();
+    if (instruction.toLowerCase().contains("left")) {
+      await bleManager.sendCommand("L:5"); // Effect 5 for left
+      print("Sent LEFT command to ESP");
+    } else if (instruction.toLowerCase().contains("right")) {
+      await bleManager.sendCommand("R:10"); // Effect 10 for right
+      print("Sent RIGHT command to ESP");
+    }
   }
-
   // Update camera to follow the user.
   void _updateCamera() {
     if (_currentPosition == null) return;
@@ -425,7 +427,7 @@ class _MapPageState extends State<MapPage> {
                 spreadRadius: 1,
                 offset: const Offset(0, 4))
           ],
-          borderRadius: BorderRadius.circular(12)),
+          borderRadius: BorderRadius.circular(24)),
       child: TypeAheadField<Description?>(
           onSelected: (suggestion) async {
             setState(() {
@@ -628,7 +630,7 @@ class _MapPageState extends State<MapPage> {
     if (_currentRoute == null) return const SizedBox.shrink();
     if (_remainingSteps.isEmpty) {
       return Positioned(
-        top: 40,
+        top: 60,
         left: 20,
         right: 20,
         child: Container(
@@ -651,7 +653,7 @@ class _MapPageState extends State<MapPage> {
     final durationFormatted = _formatDuration(_currentRoute!.duration);
 
     return Positioned(
-      top: 40,
+      top: 60,
       left: 20,
       right: 20,
       child: Container(
@@ -728,7 +730,7 @@ class _MapPageState extends State<MapPage> {
             ),
             if (!_tripStarted)
               Container(
-                margin: const EdgeInsets.only(left: 20, right: 20, top: 40),
+                margin: const EdgeInsets.only(left: 20, right: 20, top: 60),
                 child: Align(
                   alignment: Alignment.topCenter,
                   child: Column(
@@ -743,7 +745,7 @@ class _MapPageState extends State<MapPage> {
               ),
             if (!_tripStarted)
               Positioned(
-                bottom: 40,
+                bottom: 20,
                 left: 20,
                 right: 20,
                 child: startTripButton(),
