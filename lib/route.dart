@@ -97,7 +97,7 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
         controller: _controller,
         visible: isAppbarVisible,
         child: AppBar(
-          title: const Text("Vest"),
+          title: const Text("PulsePathway"),
           elevation: 2,
         ),
       )
