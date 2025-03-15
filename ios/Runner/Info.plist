@@ -21,7 +21,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>NSAppleMusicUsageDescription</key>
-    <string>We need this to show you what's currently playing</string>
+    <string>This app needs access to your music library to display now playing information.</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
@@ -55,6 +55,7 @@
 	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
+	    <string>audio</string>
 		<string>location</string>
 		<string>bluetooth-central</string>
 	</array>

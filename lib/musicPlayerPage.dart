@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nowplaying/nowplaying.dart';
 import 'package:nowplaying/nowplaying_track.dart';
 import 'package:provider/provider.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:vest1/main.dart';
 
 class MusicPlayerPage extends StatelessWidget {
   const MusicPlayerPage({super.key});
@@ -24,6 +24,7 @@ class NowPlayingTrackWidget extends StatefulWidget {
 
 class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
   late AudioHandler _audioHandler;
+  static const platform = MethodChannel('com.yourapp/media');
 
   @override
   void initState() {
@@ -32,11 +33,10 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
     _checkPermissions();
   }
 
-  // Initialize Audio Service
   Future<void> _initAudioService() async {
     _audioHandler = await AudioService.init(
       builder: () => SystemMediaControlHandler(),
-      config: AudioServiceConfig(
+      config: const AudioServiceConfig(
         androidNotificationChannelId: 'com.codingmind.pulsepath.channel.audio',
         androidNotificationChannelName: 'PulsePath Audio',
         androidNotificationOngoing: true,
@@ -44,7 +44,6 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
     );
   }
 
-  // Check permissions for NowPlaying
   Future<void> _checkPermissions() async {
     bool isEnabled = await NowPlaying.instance.isEnabled();
     if (!isEnabled) {
@@ -60,6 +59,7 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
       value: NowPlaying.instance.stream,
       child: Consumer<NowPlayingTrack>(
         builder: (context, track, _) {
+          print('Track update: ${track.title}, ${track.state}, ${track.source}');
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -67,8 +67,8 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
               children: [
                 if (track.isStopped)
                   Text('Nothing playing',
-                      style: TextStyle(fontSize: 18, color: Colors.grey)),
-                if (!track.isStopped) ...[
+                      style: TextStyle(fontSize: 18, color: Colors.grey))
+                else ...[
                   if (track.title != null)
                     Text(track.title!.trim(),
                         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
@@ -83,9 +83,11 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
                       style: TextStyle(fontSize: 16)),
                   TrackProgressIndicator(track),
                   LinearProgressIndicator(
-                    value: track.progress.inSeconds / track.duration.inSeconds,
+                    value: track.duration.inSeconds > 0
+                        ? track.progress.inSeconds / track.duration.inSeconds
+                        : 0,
                     backgroundColor: Colors.grey[300],
-                    valueColor: AlwaysStoppedAnimation<Color>(MyApp.primaryColor),
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
                   ),
                   Text(track.state.toString(),
                       style: TextStyle(fontSize: 16, color: Colors.grey)),
@@ -111,7 +113,7 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
                       Positioned(
                           top: 0,
                           left: 8,
-                          child: Text(track.source!.trim(),
+                          child: Text(track.source?.trim() ?? 'Unknown',
                               style: TextStyle(fontSize: 14, color: Colors.grey))),
                     ],
                   ),
@@ -223,8 +225,9 @@ class _NowPlayingTrackState extends State<NowPlayingTrackWidget> {
   }
 }
 
-// Audio handler for system media control
 class SystemMediaControlHandler extends BaseAudioHandler {
+  static const platform = MethodChannel('com.yourapp/media');
+
   @override
   Future<void> play() async {
     playbackState.add(playbackState.value.copyWith(
@@ -253,13 +256,12 @@ class SystemMediaControlHandler extends BaseAudioHandler {
     await platformInvoke('previous');
   }
 
-  // Platform-specific invocation (simplified; actual implementation may vary)
   Future<void> platformInvoke(String action) async {
-    // try {
-    //   await AudioService.(action);
-    // } catch (e) {
-    //   print("System media action $action failed: $e");
-    // }
+    try {
+      await platform.invokeMethod(action);
+    } catch (e) {
+      print("System media action $action failed: $e");
+    }
   }
 }
 
