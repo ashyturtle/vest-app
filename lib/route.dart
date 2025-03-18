@@ -21,7 +21,6 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
   List<Widget> pages = [
     HomePage(),
     MapPage(),
-    MusicPlayerPage(),
     UserPage(),
   ];
 
@@ -124,10 +123,6 @@ class _RoutePageState extends State<RoutePage> with SingleTickerProviderStateMix
           NavigationDestination(
               icon: Icon(selectedPageIndex == 1 ? Icons.navigation : Icons.navigation_outlined),
               label: "Navigation"
-          ),
-          NavigationDestination(
-              icon: Icon(selectedPageIndex == 2 ? Icons.music_note : Icons.music_note_outlined),
-              label: "Music"
           ),
           NavigationDestination(
               icon: Icon(selectedPageIndex == 3 ? Icons.grid_view_rounded : Icons.grid_view_outlined),
