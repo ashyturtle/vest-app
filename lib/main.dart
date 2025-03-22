@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:nowplaying/nowplaying.dart';
+//import 'package:nowplaying/nowplaying.dart';
 import 'package:vest1/SplashScreen.dart';
 
 
@@ -9,11 +9,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp();
-  await NowPlaying.instance.start(
-    resolveImages: true,
-    spotifyClientId: dotenv.env['SPOTIFY_CLIENT_ID'],
-    spotifyClientSecret: dotenv.env['SPOTIFY_CLIENT_SECRET'],
-  );
+  // await NowPlaying.instance.start(
+  //   resolveImages: true,
+  //   spotifyClientId: dotenv.env['SPOTIFY_CLIENT_ID'],
+  //   spotifyClientSecret: dotenv.env['SPOTIFY_CLIENT_SECRET'],
+  // );
   runApp(const MyApp());
 }
 
