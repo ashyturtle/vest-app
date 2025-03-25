@@ -40,7 +40,7 @@
     </dict>
     <key>NSBluetoothAlwaysUsageDescription</key>
     <string>Blx≈AndWhenInUseUsageDescription</key>
-    <string>This app needs your location to display maps and provide navigation even when the app is in the background.</string>
+    <string>PulsePathway needs your location to display maps and provide navigation even when the app is in the background.</string>
     <key>NSLocationAlwaysUsageDescription</key>
     <string>This app needs your location to provide background location updates.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
